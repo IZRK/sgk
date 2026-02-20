@@ -5,7 +5,7 @@
   --accent: #0d5a72;
   --paper: #fffdf8;
   --line: rgba(17, 33, 40, 0.14);
-  --content-width: min(860px, 88vw);
+  --content-width: min(1120px, 92vw);
 }
 
 * { box-sizing: border-box; }
@@ -27,7 +27,7 @@ body {
 }
 
 .hero {
-  padding: 1rem 0 0;
+  padding: 0;
 }
 
 .hero-shell {
@@ -45,6 +45,18 @@ body {
   border: 0;
   border-radius: 0;
   box-shadow: none;
+}
+
+.hero-shell.hero-fullbleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  box-shadow: none;
+  height: min(66.666vw, 56svh, 620px);
+  aspect-ratio: auto;
 }
 
 .hero-bg {
@@ -214,7 +226,7 @@ h2 {
 
 /* Circular page */
 .circular-main {
-  padding: 1rem 0 2.4rem;
+  padding: 0 0 2.4rem;
 }
 
 .circular-paper {
@@ -271,6 +283,9 @@ h2 {
   margin-bottom: .7rem;
   font-family: "Geist", sans-serif;
   font-weight: 700;
+  color: #0f3f51;
+  padding-bottom: .3rem;
+  border-bottom: 1px solid var(--line);
 }
 
 .circular-section h3 {
@@ -286,6 +301,7 @@ h2 {
 .circular-section p {
   margin: .5rem 0;
   color: #23373f;
+  max-width: 78ch;
 }
 
 .dates-list,
@@ -301,6 +317,17 @@ h2 {
 .program-list li,
 .excursion-list li {
   margin: .32rem 0;
+}
+
+.program-list li,
+.excursion-list li {
+  padding: .42rem .55rem;
+  border-radius: .45rem;
+}
+
+.program-list li:nth-child(odd),
+.excursion-list li:nth-child(odd) {
+  background: rgba(13, 90, 114, 0.05);
 }
 
 .info-grid {
@@ -346,6 +373,65 @@ h2 {
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
+}
+
+.fees-table tbody tr:nth-child(even) td {
+  background: rgba(13, 90, 114, 0.04);
+}
+
+.venue-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .8rem;
+  margin-top: .9rem;
+}
+
+.venue-card {
+  border: 1px solid var(--line);
+  border-radius: .7rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.venue-card img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.venue-card figcaption {
+  font-size: .9rem;
+  padding: .45rem .55rem;
+  color: #26414b;
+  font-weight: 500;
+}
+
+.org-logos {
+  margin-top: .8rem;
+}
+
+.org-logo-card {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: .7rem;
+  background: #fff;
+  overflow: hidden;
+  max-width: 560px;
+}
+
+.org-logo-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.org-logo-card figcaption {
+  font-size: .88rem;
+  color: #2b454f;
+  padding: .4rem .55rem;
+  font-weight: 500;
+  font-family: "Geist", sans-serif;
 }
 
 .circular-footer {
@@ -397,6 +483,10 @@ h2 {
   .hero-title,
   .circular-header .hero-title { top: 45%; }
 
+  .hero-shell.hero-fullbleed {
+    height: min(66.666vw, 50svh, 500px);
+  }
+
   .circular-content {
     padding: 1rem .85rem 1.2rem;
   }
@@ -404,15 +494,15 @@ h2 {
   .fees-table {
     font-size: .92rem;
   }
+
+  .venue-gallery {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-height: 800px) {
   :root {
-    --content-width: min(760px, 84vw);
-  }
-
-  .hero {
-    padding-top: .65rem;
+    --content-width: min(980px, 90vw);
   }
 
   .cards {
@@ -426,5 +516,9 @@ h2 {
 
   .hero-meta {
     font-size: clamp(1rem, 2.7vw, 2.2rem);
+  }
+
+  .hero-shell.hero-fullbleed {
+    height: min(66.666vw, 46svh, 460px);
   }
 }
