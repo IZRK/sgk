@@ -5,7 +5,7 @@
   --accent: #0d5a72;
   --paper: #fffdf8;
   --line: rgba(17, 33, 40, 0.14);
-  --content-width: min(960px, 90vw);
+  --content-width: min(860px, 88vw);
 }
 
 * { box-sizing: border-box; }
@@ -38,7 +38,7 @@ body {
   overflow: hidden;
   box-shadow: 0 26px 60px rgba(10, 31, 38, 0.16);
   background: #7ed8aa;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 3 / 2;
 }
 
 .hero-shell.flat {
@@ -397,10 +397,6 @@ h2 {
   .hero-title,
   .circular-header .hero-title { top: 45%; }
 
-  .hero-shell {
-    aspect-ratio: 4 / 5;
-  }
-
   .circular-content {
     padding: 1rem .85rem 1.2rem;
   }
@@ -410,8 +406,25 @@ h2 {
   }
 }
 
-@media (min-width: 921px) {
-  .hero-shell {
-    aspect-ratio: 3 / 2;
+@media (max-height: 800px) {
+  :root {
+    --content-width: min(760px, 84vw);
+  }
+
+  .hero {
+    padding-top: .65rem;
+  }
+
+  .cards {
+    margin-top: .9rem;
+    gap: .8rem;
+  }
+
+  .card {
+    padding: .8rem;
+  }
+
+  .hero-meta {
+    font-size: clamp(1rem, 2.7vw, 2.2rem);
   }
 }
