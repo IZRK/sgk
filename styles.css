@@ -5,6 +5,7 @@
   --accent: #0d5a72;
   --paper: #fffdf8;
   --line: rgba(17, 33, 40, 0.14);
+  --content-width: min(960px, 90vw);
 }
 
 * { box-sizing: border-box; }
@@ -21,7 +22,7 @@ body {
 }
 
 .container {
-  width: min(1140px, 92vw);
+  width: var(--content-width);
   margin: 0 auto;
 }
 
@@ -31,11 +32,13 @@ body {
 
 .hero-shell {
   position: relative;
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 26px 60px rgba(10, 31, 38, 0.16);
   background: #7ed8aa;
+  aspect-ratio: 4 / 5;
 }
 
 .hero-shell.flat {
@@ -46,8 +49,10 @@ body {
 
 .hero-bg {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
 .hero-fade {
@@ -213,7 +218,7 @@ h2 {
 }
 
 .circular-paper {
-  width: min(1140px, 92vw);
+  width: var(--content-width);
   margin: 0 auto;
 }
 
@@ -392,11 +397,21 @@ h2 {
   .hero-title,
   .circular-header .hero-title { top: 45%; }
 
+  .hero-shell {
+    aspect-ratio: 4 / 5;
+  }
+
   .circular-content {
     padding: 1rem .85rem 1.2rem;
   }
 
   .fees-table {
     font-size: .92rem;
+  }
+}
+
+@media (min-width: 921px) {
+  .hero-shell {
+    aspect-ratio: 3 / 2;
   }
 }
