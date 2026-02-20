@@ -10,6 +10,12 @@
 
 * { box-sizing: border-box; }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   font-family: "Geist", sans-serif;
@@ -38,7 +44,7 @@ body {
   overflow: hidden;
   box-shadow: 0 26px 60px rgba(10, 31, 38, 0.16);
   background: #7ed8aa;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 9;
 }
 
 .hero-shell.flat {
@@ -47,24 +53,12 @@ body {
   box-shadow: none;
 }
 
-.hero-shell.hero-fullbleed {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  border-left: 0;
-  border-right: 0;
-  border-radius: 0;
-  box-shadow: none;
-  height: min(66.666vw, 56svh, 620px);
-  aspect-ratio: auto;
-}
-
 .hero-bg {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center;
+  object-position: center center;
 }
 
 .hero-fade {
@@ -89,7 +83,7 @@ body {
 .hero-title {
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 50%;
   transform: translate(-50%, -50%);
   width: min(92%, 1040px);
   height: auto;
@@ -244,7 +238,7 @@ h2 {
   text-decoration: none;
 }
 
-.circular-header .hero-title { top: 40%; }
+.circular-header .hero-title { top: 50%; }
 
 .circular-headnote {
   display: flex;
@@ -302,6 +296,15 @@ h2 {
   margin: .5rem 0;
   color: #23373f;
   max-width: 78ch;
+}
+
+.circular-content a,
+.circular-content td,
+.circular-content th,
+.circular-content li,
+.circular-content p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .dates-list,
@@ -481,11 +484,7 @@ h2 {
   .timeline li { grid-template-columns: 1fr; }
 
   .hero-title,
-  .circular-header .hero-title { top: 45%; }
-
-  .hero-shell.hero-fullbleed {
-    height: min(66.666vw, 50svh, 500px);
-  }
+  .circular-header .hero-title { top: 50%; }
 
   .circular-content {
     padding: 1rem .85rem 1.2rem;
@@ -502,7 +501,7 @@ h2 {
 
 @media (max-height: 800px) {
   :root {
-    --content-width: min(980px, 90vw);
+    --content-width: min(900px, 90vw);
   }
 
   .cards {
@@ -518,7 +517,44 @@ h2 {
     font-size: clamp(1rem, 2.7vw, 2.2rem);
   }
 
-  .hero-shell.hero-fullbleed {
-    height: min(66.666vw, 46svh, 460px);
+}
+
+@media (max-height: 900px) {
+  :root {
+    --content-width: min(980px, 90vw);
+  }
+}
+
+@media (max-height: 760px) {
+  :root {
+    --content-width: min(780px, 88vw);
+  }
+
+  .hero-meta {
+    font-size: clamp(.92rem, 2.2vw, 1.7rem);
+  }
+}
+
+@media (max-width: 240px) {
+  :root {
+    --content-width: 100vw;
+  }
+
+  .container,
+  .circular-paper {
+    width: 100vw;
+  }
+
+  .hero-brand {
+    width: clamp(44px, 20vw, 84px);
+  }
+
+  .hero-brand.right {
+    width: clamp(52px, 24vw, 96px);
+  }
+
+  .hero-meta {
+    font-size: clamp(.68rem, 6vw, .92rem);
+    bottom: 8px;
   }
 }
