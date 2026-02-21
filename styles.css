@@ -285,7 +285,6 @@ h2 {
   padding: .75rem 1rem;
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   background: #f7fbf9;
   color: var(--muted);
   font-size: .92rem;
@@ -304,9 +303,8 @@ h2 {
 }
 
 .circular-section + .circular-section {
-  margin-top: 1.55rem;
-  padding-top: 1.2rem;
-  border-top: 1px solid var(--line);
+  margin-top: 2rem;
+  padding-top: .25rem;
 }
 
 .circular-section h2 {
@@ -315,8 +313,9 @@ h2 {
   font-family: "Geist", sans-serif;
   font-weight: 700;
   color: #0f3f51;
-  padding-bottom: .3rem;
-  border-bottom: 1px solid var(--line);
+  border-left: 4px solid rgba(13, 90, 114, 0.36);
+  padding-left: .62rem;
+  line-height: 1.15;
 }
 
 .circular-section h3 {
@@ -447,31 +446,52 @@ h2 {
   font-weight: 500;
 }
 
-.org-logos {
+.org-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: clamp(.55rem, 2.2vw, 1.25rem);
   margin-top: .8rem;
 }
 
-.org-logo-card {
-  margin: 0;
-  border: 1px solid var(--line);
-  border-radius: .7rem;
-  background: #fff;
-  overflow: hidden;
-  max-width: 560px;
-}
-
-.org-logo-card img {
+.izrk-logo-emblem {
   display: block;
-  width: 100%;
-  height: auto;
+  height: clamp(62px, 9.6vw, 84px);
+  width: auto;
+  max-width: 26vw;
+  object-fit: contain;
 }
 
-.org-logo-card figcaption {
-  font-size: .88rem;
-  color: #2b454f;
-  padding: .4rem .55rem;
-  font-weight: 500;
-  font-family: "Geist", sans-serif;
+.izrk-logo-main {
+  display: block;
+  height: clamp(58px, 8.9vw, 78px);
+  width: auto;
+  max-width: 64vw;
+  object-fit: contain;
+}
+
+.org-logo-single {
+  display: flex;
+  justify-content: center;
+  margin-top: .8rem;
+}
+
+.org-logo-single img {
+  display: block;
+  height: clamp(62px, 9.6vw, 84px);
+  width: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 420px) {
+  .izrk-logo-main {
+    max-width: 62vw;
+  }
+
+  .izrk-logo-emblem {
+    max-width: 24vw;
+  }
 }
 
 .circular-footer {
@@ -490,8 +510,6 @@ h2 {
 }
 
 .circular-mini-strip {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
   background: #74d3a5;
