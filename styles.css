@@ -90,7 +90,27 @@ body {
 }
 
 .hero-brand.left { left: clamp(12px, 2.4vw, 32px); }
-.hero-brand.right { right: clamp(12px, 2.4vw, 32px); width: clamp(96px, 15vw, 212px); }
+
+.hero-brand-cluster {
+  position: absolute;
+  top: clamp(12px, 2vw, 26px);
+  right: clamp(12px, 2.4vw, 32px);
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(8px, 1.2vw, 18px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
+}
+
+.hero-brand-cluster .hero-brand {
+  position: static;
+  top: auto;
+  width: auto;
+  filter: none;
+}
+
+.hero-brand.zrc-logo { width: clamp(96px, 15vw, 212px); }
+.hero-brand.sgd-logo { width: clamp(72px, 10vw, 135px); }
 
 .hero-title {
   position: absolute;
@@ -608,8 +628,11 @@ h2 {
     width: clamp(44px, 20vw, 84px);
   }
 
-  .hero-brand.right {
-    width: clamp(52px, 24vw, 96px);
+  .hero-brand.zrc-logo { width: clamp(52px, 24vw, 96px); }
+  .hero-brand.sgd-logo { width: clamp(40px, 18vw, 76px); }
+
+  .hero-brand-cluster {
+    gap: 4px;
   }
 
   .hero-meta {
