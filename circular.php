@@ -1,47 +1,15 @@
-<!doctype html>
-<html lang="sl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="7. Slovenski geološki kongres - 1. obvestilo (20. 2. 2026)" />
-  <meta property="og:description" content="7. Slovenski geološki kongres · 1.–3. oktober 2026 · Lipica, Hotel Maestoso." />
-  <meta property="og:image" content="complete_header.webp" />
-  <meta property="og:image:alt" content="7. Slovenski geološki kongres" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="7. Slovenski geološki kongres - 1. obvestilo" />
-  <meta name="twitter:description" content="7. Slovenski geološki kongres · 1.–3. oktober 2026 · Lipica, Hotel Maestoso." />
-  <meta name="twitter:image" content="complete_header.webp" />
-  <title>7. Slovenski geološki kongres - 1. obvestilo (20. 2. 2026)</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <main class="circular-main">
-    <article class="circular-paper">
-      <header class="circular-header">
-        <a class="hero-home-link" href="./" aria-label="Nazaj na vstopno stran">
-          <div class="hero-shell hero-fullbleed">
-            <img class="hero-bg" src="bg.webp" alt="Geološka tekstura in grafični elementi kongresa" />
-            <div class="hero-fade"></div>
-            <img class="hero-brand left" src="sgk_logo.svg" alt="7. Slovenski geološki kongres" />
-            <div class="hero-brand-cluster" aria-label="Organizatorja kongresa">
-              <img class="hero-brand zrc-logo" src="zrc.svg" alt="ZRC SAZU" />
-              <img class="hero-brand sgd-logo" src="sgd.svg" alt="Slovensko geološko društvo" />
-            </div>
-            <img class="hero-title" src="header.svg" alt="7. Slovenski geološki kongres" />
-            <div class="hero-meta left">Lipica, Hotel Maestoso</div>
-            <div class="hero-meta right">1. - 3. 10. 2026</div>
-          </div>
-        </a>
-      </header>
+<?php
+declare(strict_types=1);
 
+$pageTitle = '7. Slovenski geološki kongres - 1. obvestilo (20. 2. 2026)';
+$activePage = 'circular';
+require __DIR__ . '/includes/header.php';
+?>
+<section class="circular-main">
+  <article class="circular-paper">
       <div class="circular-headnote">
         <span><strong>7. Slovenski geološki kongres</strong> · 1. obvestilo</span>
-        <span><a class="home-link" href="./">Nazaj na vstopno stran</a> · Postojna, 19. 2. 2026</span>
+        <span><a class="home-link" href="/">Nazaj na vstopno stran</a> · Postojna, 19. 2. 2026</span>
       </div>
 
       <div class="circular-mini-strip">
@@ -258,15 +226,8 @@
 
       <footer class="circular-footer">
         <span>7. Slovenski geološki kongres · 1. obvestilo · Postojna, 19. 2. 2026</span>
-        <span><a class="home-link" href="./">Nazaj na vstopno stran</a></span>
+        <span><a class="home-link" href="/">Nazaj na vstopno stran</a></span>
       </footer>
     </article>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <div>Spletni razvoj: Žan Kafol, <a href="https://kafol.net" target="_blank" rel="noreferrer">Kafol.NET</a>, <a href="https://izrkp.zrc-sazu.si" target="_blank" rel="noreferrer">IZRK ZRC SAZU</a> &middot; 2026</div>
-    </div>
-  </footer>
-</body>
-</html>
+</section>
+<?php require __DIR__ . '/includes/footer.php'; ?>

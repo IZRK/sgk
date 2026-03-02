@@ -1,2 +1,5 @@
 /pdf_designs/
 /.idea/
+.env
+/vendor/
+/.form/
