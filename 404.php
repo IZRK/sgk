@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 $pageTitle = 'Stran ni bila najdena | 7. Slovenski geološki kongres';
 $activePage = '';
 require __DIR__ . '/includes/header.php';

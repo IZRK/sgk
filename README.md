@@ -23,7 +23,7 @@ Spletišče vključuje predstavitev dogodka, program, pomembne datume, informaci
 Glavne datoteke in mape:
 
 - `index.php` - vstopna točka in usmerjanje glavnih poti
-- `*.php` - posamezne vsebinske strani (`o-kongresu.php`, `program.php`, `registracija.php`, `circular.php`, ...)
+- `*.php` - posamezne vsebinske strani (`program.php`, `registracija.php`, `circular.php`, ...)
 - `includes/` - skupne komponente, inicializacija in poštna logika
 - `assets/` - fotografije in vizualni materiali
 - `html/email.html` - predloga za potrditveno e-pošto

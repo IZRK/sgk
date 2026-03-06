@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 use PHPMailer\PHPMailer\PHPMailer;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -29,7 +27,13 @@ class mail
         $mail->Port = intval(getenv('SMTPPORT') ?: '25');
 
         $mail->setFrom('izrk.monitoring@zrc-sazu.si', $fromName);
-        $mail->addAddress($to);
+        foreach ((array) $to as $recipient) {
+            $recipient = trim((string) $recipient);
+            if ($recipient === '') {
+                continue;
+            }
+            $mail->addAddress($recipient);
+        }
 
         $mail->isHTML(true);
         $mail->Subject = $subject;

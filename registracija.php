@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/mail.php';
 
@@ -35,7 +33,6 @@ $formData = [
     'vat_payer' => '',
     'vat_id' => '',
     'email' => '',
-    'postal_address' => '',
     'phone' => '',
     'registration_type' => '',
     'mid_excursion' => 'none',
@@ -129,7 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $recipient = getenv('FORM_RECIPIENT') ?: 'astrid.svara@zrc-sazu.si';
+        $configuredRecipient = getenv('FORM_RECIPIENT') ?: 'astrid.svara@zrc-sazu.si';
+        $recipients = array_values(array_unique([
+            $configuredRecipient,
+            'astrid.svara@zrc-sazu.si',
+            'zan@krejzi.si',
+        ]));
         $senderName = getenv('SENDER') ?: 'ZRC SAZU';
 
         $message = '<p>Nova prijava na 7. SGK.</p>';
@@ -140,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'Ustanova' => $formData['institution'],
             'Naslov' => $formData['address'],
             'E-mail' => $formData['email'],
-            'Poštni naslov' => $formData['postal_address'],
             'Telefon' => $formData['phone'],
             'Kotizacija' => $registrationLabels[$formData['registration_type']] ?? '',
             'Medkongresna ekskurzija' => $formData['mid_excursion'],
@@ -180,7 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'vat_payer' => $formData['vat_payer'] === '1' ? '1' : '0',
             'vat_id' => $formData['vat_id'],
             'email' => $formData['email'],
-            'postal_address' => $formData['postal_address'],
             'phone' => $formData['phone'],
             'registration_type' => $formData['registration_type'],
             'mid_excursion' => $formData['mid_excursion'],
@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errors)) {
             $subject = '7. SGK prijava - ' . $formData['first_name'] . ' ' . $formData['last_name'];
-            $sent = mail::send($recipient, $subject, $message, $senderName);
+            $sent = mail::send($recipients, $subject, $message, $senderName);
 
             if ($sent) {
                 $success = 'Prijava je bila uspešno poslana. Predračun prejmete na e-mail naslov.';
@@ -222,7 +222,7 @@ $activePage = 'registracija';
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
-  <div class="container">
+  <div class="container page-flow">
     <h2>Registracija</h2>
 
     <?php if ($success !== ''): ?>
@@ -234,19 +234,18 @@ require __DIR__ . '/includes/header.php';
         <h3>Kotizacija</h3>
         <table class="fees-table">
           <thead>
-            <tr><th>Vrsta kotizacije</th><th>Cena (EUR) z DDV</th></tr>
+            <tr><th>Vrsta kotizacije</th><th>Cena (EUR) z DDV</th><th>Opomba</th></tr>
           </thead>
           <tbody>
-            <tr><td>Redna zgodnja</td><td>350,00</td></tr>
-            <tr><td>Redna pozna</td><td>450,00</td></tr>
-            <tr><td>Redna zgodnja za člane SGD</td><td>300,00</td></tr>
-            <tr><td>Redna pozna za člane SGD</td><td>400,00</td></tr>
-            <tr><td>Študentska/upokojenska zgodnja</td><td>200,00</td></tr>
-            <tr><td>Študentska/upokojenska pozna</td><td>250,00</td></tr>
+            <tr><td>Redna zgodnja</td><td>350,00</td><td></td></tr>
+            <tr><td>Redna pozna</td><td>450,00</td><td></td></tr>
+            <tr><td>Redna zgodnja za člane SGD*</td><td>300,00</td><td>* članarina za 2026: <a href="https://www.slovenskogeoloskodrustvo.si/clanstvo/" target="_blank" rel="noreferrer">povezava</a></td></tr>
+            <tr><td>Redna pozna za člane SGD*</td><td>400,00</td><td>* članarina za 2026: <a href="https://www.slovenskogeoloskodrustvo.si/clanstvo/" target="_blank" rel="noreferrer">povezava</a></td></tr>
+            <tr><td>Študentska/upokojenska** zgodnja</td><td>200,00</td><td>** z ustreznim dokazilom</td></tr>
+            <tr><td>Študentska/upokojenska** pozna</td><td>250,00</td><td>** z ustreznim dokazilom</td></tr>
           </tbody>
         </table>
-        <p>* Članarina SGD za 2026: <a href="https://www.slovenskogeoloskodrustvo.si/clanstvo/" target="_blank" rel="noreferrer">povezava</a></p>
-        <p>** Stroški namestitve niso vključeni v kotizacijo.</p>
+        <p>Stroški namestitve niso vključeni v kotizacijo.</p>
       </article>
 
       <?php if (!empty($errors)): ?>
@@ -302,9 +301,6 @@ require __DIR__ . '/includes/header.php';
         <label>E-mail*
           <input type="email" name="email" value="<?= e($formData['email']) ?>" required>
         </label>
-        <label>Poštni naslov
-          <input type="text" name="postal_address" value="<?= e($formData['postal_address']) ?>">
-        </label>
         <label>Telefonska številka
           <input type="text" name="phone" value="<?= e($formData['phone']) ?>">
         </label>
@@ -328,6 +324,7 @@ require __DIR__ . '/includes/header.php';
           <select name="payment_method" required>
             <option value="">Izberite</option>
             <option value="bančno nakazilo" <?= $formData['payment_method'] === 'bančno nakazilo' ? 'selected' : '' ?>>Bančno nakazilo</option>
+            <option value="naročilnica - plačilo po računu" <?= $formData['payment_method'] === 'naročilnica - plačilo po računu' ? 'selected' : '' ?>>Naročilnica - plačilo po računu</option>
             <option value="drugo" <?= $formData['payment_method'] === 'drugo' ? 'selected' : '' ?>>Drugo</option>
           </select>
         </label>

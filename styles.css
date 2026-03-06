@@ -150,8 +150,15 @@ body {
 .hero-meta.left { left: clamp(12px, 2.4vw, 34px); }
 .hero-meta.right { right: clamp(12px, 2.4vw, 34px); }
 
+.home-flow > * + * {
+  margin-top: 1.6rem;
+}
+
+.page-flow > * + * {
+  margin-top: 1.6rem;
+}
+
 .cards {
-  margin-top: 1.2rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
@@ -192,10 +199,13 @@ h2 {
 }
 
 .grid {
-  margin-top: 1.8rem;
   display: grid;
   grid-template-columns: 1.22fr 1fr;
   gap: 1.2rem;
+}
+
+.grid-equal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .panel {
@@ -235,7 +245,6 @@ h2 {
 .timeline time { font-weight: 600; }
 
 .cta {
-  margin-top: 1.5rem;
   display: flex;
   flex-wrap: wrap;
   gap: .8rem;
@@ -245,7 +254,7 @@ h2 {
   text-decoration: none;
   padding: .8rem 1.2rem;
   border-radius: 999px;
-  font-weight: 600;
+  font-weight: 700;
   border: 1px solid transparent;
 }
 
@@ -330,7 +339,7 @@ h2 {
   font-family: "Geist", sans-serif;
   font-size: 1.02rem;
   line-height: 1.64;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .circular-section + .circular-section {
@@ -449,14 +458,30 @@ h2 {
   background: rgba(13, 90, 114, 0.04);
 }
 
+.schedule-table td:first-child {
+  width: 24%;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.schedule-table td:nth-child(2) {
+  width: 36%;
+}
+
+.schedule-table td:nth-child(3) {
+  width: 40%;
+}
+
 .venue-gallery {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .8rem;
-  margin-top: .9rem;
+  gap: 1.2rem;
 }
 
 .venue-card {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: .7rem;
   overflow: hidden;
@@ -677,7 +702,7 @@ h2 {
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0.15rem;
+  gap: 0.45rem;
   width: 100%;
 }
 
@@ -686,9 +711,9 @@ h2 {
   color: #17313a;
   border: 1px solid transparent;
   border-radius: 999px;
-  padding: 0.38rem 0.52rem;
-  font-weight: 600;
-  font-size: 0.76rem;
+  padding: 0.62rem 0.95rem;
+  font-weight: 400;
+  font-size: 0.98rem;
   white-space: nowrap;
 }
 
@@ -726,7 +751,6 @@ h2 {
 }
 
 .registration-form {
-  margin-top: 1.4rem;
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -836,7 +860,7 @@ h2 {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.35rem;
+    gap: 0.45rem;
     margin-top: 0.45rem;
   }
 
@@ -845,11 +869,16 @@ h2 {
   }
 
   .menu-link {
-    font-size: 0.92rem;
-    padding: 0.55rem 0.75rem;
+    font-size: 1.02rem;
+    padding: 0.82rem 1rem;
   }
 
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid,
+  .grid-equal {
     grid-template-columns: 1fr;
   }
 }

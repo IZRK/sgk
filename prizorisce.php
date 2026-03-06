@@ -1,16 +1,14 @@
 <?php
-declare(strict_types=1);
-
 $pageTitle = 'Prizorišče kongresa | 7. Slovenski geološki kongres';
 $activePage = 'prizorisce';
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
-  <div class="container">
+  <div class="container page-flow">
     <h2>Prizorišče kongresa</h2>
     <p class="lead">Kongres poteka v Hotelu Maestoso in kongresnem centru Conversano v Lipici.</p>
 
-    <div class="grid">
+    <div class="grid grid-equal">
       <article class="panel">
         <h3>Hotel Maestoso</h3>
         <p><a href="https://www.lipica.org/sl/new-hotel-maestoso/" target="_blank" rel="noreferrer">www.lipica.org/sl/new-hotel-maestoso</a></p>

@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 $pageTitle = 'Sponzorji | 7. Slovenski geološki kongres';
 $activePage = 'sponzorji';
 require __DIR__ . '/includes/header.php';

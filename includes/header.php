@@ -1,14 +1,11 @@
 <?php
-declare(strict_types=1);
-
 require_once __DIR__ . '/bootstrap.php';
 
 $pageTitle = $pageTitle ?? '7. Slovenski geološki kongres';
-$activePage = $activePage ?? 'domov';
+$activePage = $activePage ?? 'home';
 
 $menu = [
-    'domov' => ['label' => 'Domov', 'href' => '/'],
-    'o-kongresu' => ['label' => 'O kongresu', 'href' => '/o-kongresu'],
+    'home' => ['label' => 'Home', 'href' => '/'],
     'pomembni-datumi' => ['label' => 'Pomembni datumi', 'href' => '/pomembni-datumi'],
     'povzetki' => ['label' => 'Povzetki in predstavitve', 'href' => '/povzetki'],
     'registracija' => ['label' => 'Registracija', 'href' => '/registracija'],
@@ -16,7 +13,6 @@ $menu = [
     'ekskurzije' => ['label' => 'Ekskurzije', 'href' => '/ekskurzije'],
     'prizorisce' => ['label' => 'Prizorišče', 'href' => '/prizorisce'],
     'sponzorji' => ['label' => 'Sponzorji', 'href' => '/sponzorji'],
-    'circular' => ['label' => '1. obvestilo', 'href' => '/circular'],
 ];
 ?>
 <!doctype html>

@@ -1,12 +1,10 @@
 <?php
-declare(strict_types=1);
-
 $pageTitle = 'Povzetki in predstavitve | 7. Slovenski geološki kongres';
 $activePage = 'povzetki';
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
-  <div class="container">
+  <div class="container page-flow">
     <h2>Povzetki in predstavitve</h2>
 
     <article class="panel">
