@@ -54,18 +54,31 @@ class mail
         }
 
         foreach ($inlineImages as $img) {
-            if (empty($img['cid']) || empty($img['url'])) {
+            if (empty($img['cid'])) {
                 continue;
             }
             $cid = $img['cid'];
-            $url = $img['url'];
             $type = isset($img['type']) ? $img['type'] : 'image/png';
-            $data = @file_get_contents($url);
-            if ($data === false) {
+            $name = isset($img['name']) ? $img['name'] : 'inline-image';
+            $disposition = isset($img['disposition']) ? (string) $img['disposition'] : 'inline';
+
+            if (!empty($img['content'])) {
+                $data = $img['content'];
+            } elseif (!empty($img['url'])) {
+                $data = @file_get_contents($img['url']);
+            } else {
                 continue;
             }
-            $name = isset($img['name']) ? $img['name'] : basename((string) parse_url($url, PHP_URL_PATH));
-            $mail->addStringEmbeddedImage($data, $cid, $name, 'base64', $type);
+
+            if ($data === false || $data === '') {
+                continue;
+            }
+
+            $mail->addStringEmbeddedImage($data, $cid, $name, 'base64', $type, $disposition);
+
+            if (!empty($img['attach'])) {
+                $mail->addStringAttachment($data, $name, 'base64', $type);
+            }
         }
 
         $html = str_replace('{{TITLE}}', htmlspecialchars((string) $subject, ENT_QUOTES, 'UTF-8'), $html);

@@ -20,6 +20,38 @@ $registrationLabels = [
     'studentska-pozna' => 'Študentska/upokojenska pozna',
 ];
 
+function parseImageDataUrl(string $value): ?array
+{
+    $value = trim($value);
+    if ($value === '' || !preg_match('#^data:(image/(png|jpeg|gif));base64,(.+)$#s', $value, $matches)) {
+        return null;
+    }
+
+    $binary = base64_decode($matches[3], true);
+    if ($binary === false || $binary === '' || strlen($binary) > 2_500_000) {
+        return null;
+    }
+
+    return [
+        'mime' => $matches[1],
+        'extension' => $matches[2] === 'jpeg' ? 'jpg' : $matches[2],
+        'content' => $binary,
+    ];
+}
+
+function deriveInvoiceFields(array $formData): array
+{
+    $fullName = trim($formData['first_name'] . ' ' . $formData['last_name']);
+    $invoiceName = trim($formData['institution']) !== ''
+        ? trim($formData['institution'])
+        : $fullName;
+
+    return [
+        'invoice_name' => $invoiceName,
+        'invoice_address' => trim($formData['address']),
+    ];
+}
+
 $formData = [
     'first_name' => '',
     'last_name' => '',
@@ -48,10 +80,12 @@ $formData = [
     'diet_other' => '',
     'presentation_type' => '',
     'notes' => '',
+    'upn_qr_image' => '',
 ];
 
 $errors = [];
 $success = '';
+$total = 0.0;
 
 function saveSubmissionToCsv(string $csvPath, array $row): bool
 {
@@ -88,9 +122,17 @@ function saveSubmissionToCsv(string $csvPath, array $row): bool
     return $ok;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     foreach ($formData as $key => $value) {
         $formData[$key] = isset($_POST[$key]) ? trim((string) $_POST[$key]) : '';
+    }
+
+    if ($formData['invoice_same'] === '1') {
+        $formData = array_merge($formData, deriveInvoiceFields($formData));
+    }
+
+    if ($formData['vat_payer'] !== '1') {
+        $formData['vat_id'] = '';
     }
 
     if ($formData['first_name'] === '') {
@@ -112,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Izberite obliko predstavitve.';
     }
 
-    $total = 0.0;
     if (array_key_exists($formData['registration_type'], $registrationPrices)) {
         $total += $registrationPrices[$formData['registration_type']];
     }
@@ -133,6 +174,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'zan@krejzi.si',
         ]));
         $senderName = getenv('SENDER') ?: 'ZRC SAZU';
+        $qrImage = null;
+        $qrImageCid = null;
+
+        if ($formData['payment_method'] === 'bančno nakazilo') {
+            $qrImage = parseImageDataUrl($formData['upn_qr_image']);
+            if ($qrImage !== null) {
+                $qrImageCid = 'upn_qr_' . md5($formData['email'] . '|' . number_format($total, 2, '.', ''));
+            }
+        }
 
         $message = '<p>Nova prijava na 7. SGK.</p>';
         $message .= '<table style="border-collapse:collapse;width:100%;">';
@@ -167,6 +217,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $message .= '</table>';
 
+        if ($qrImageCid !== null) {
+            $message .= '<p style="margin-top:24px;text-align:center;"><strong>UPN QR za plačilo</strong></p>';
+            $message .= '<p style="margin:0;text-align:center;"><img src="cid:' . e($qrImageCid) . '" alt="UPN QR za plačilo 7. SGK" style="display:inline-block;width:250px;max-width:100%;height:auto;background:#ffffff;"></p>';
+        }
+
         $csvRow = [
             'submitted_at' => date('c'),
             'first_name' => $formData['first_name'],
@@ -197,6 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'presentation_type' => $formData['presentation_type'],
             'notes' => $formData['notes'],
             'total_eur' => number_format($total, 2, '.', ''),
+            'upn_qr_included' => $qrImageCid !== null ? '1' : '0',
         ];
         $csvPath = __DIR__ . '/.form/submissions.csv';
         $csvSaved = saveSubmissionToCsv($csvPath, $csvRow);
@@ -206,7 +262,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errors)) {
             $subject = '7. SGK prijava - ' . $formData['first_name'] . ' ' . $formData['last_name'];
-            $sent = mail::send($recipients, $subject, $message, $senderName);
+            $inlineImages = [];
+            if ($qrImage !== null && $qrImageCid !== null) {
+                $inlineImages[] = [
+                    'cid' => $qrImageCid,
+                    'content' => $qrImage['content'],
+                    'type' => $qrImage['mime'],
+                    'name' => 'upn-qr-' . date('Ymd-His') . '.' . $qrImage['extension'],
+                ];
+            }
+
+            $sent = mail::send(
+                $recipients,
+                $subject,
+                $message,
+                $senderName,
+                'https://i.imgur.com/Rhe0NrC.png',
+                'https://izrk.github.io/monitoring/',
+                $inlineImages
+            );
 
             if ($sent) {
                 $success = 'Prijava je bila uspešno poslana. Predračun prejmete na e-mail naslov.';
@@ -384,7 +458,28 @@ require __DIR__ . '/includes/header.php';
         <textarea name="notes" rows="4"><?= e($formData['notes']) ?></textarea>
       </label>
 
-      <div class="total-row">Skupaj za plačilo: <strong id="total-display">0,00 EUR</strong></div>
+      <input type="hidden" name="upn_qr_image" id="upn_qr_image" value="<?= e($formData['upn_qr_image']) ?>">
+
+      <div class="total-row">
+          Skupaj za plačilo:
+          &nbsp;
+          <strong id="total-display"><?= e(number_format($total, 2, ',', '.')) ?> EUR</strong>
+      </div>
+
+      <article class="panel payment-qr-panel" id="payment-qr-panel" hidden>
+        <div class="payment-qr-copy">
+          <h3>UPN QR za SEPA plačilo</h3>
+          <p>Če izberete bančno nakazilo, lahko plačilo izvedete s skenom QR kode na zaslonu. Ista slika se ob oddaji obrazca priloži tudi v e-mail prijave.</p>
+          <p class="payment-qr-note" id="payment-qr-note"></p>
+        </div>
+        <div class="payment-qr-visual">
+          <div class="payment-qr-loader" id="payment-qr-loader" hidden aria-hidden="true">
+            <span class="payment-qr-spinner"></span>
+          </div>
+          <img id="payment-qr-image" alt="UPN QR za plačilo kotizacije 7. SGK" hidden>
+        </div>
+      </article>
+
       <button type="submit" class="btn btn-primary">Pošlji prijavo</button>
       </form>
 
@@ -393,7 +488,7 @@ require __DIR__ . '/includes/header.php';
         <p>ZRC SAZU, Novi trg 2, 1000 Ljubljana<br>
         ID za DDV: SI38048183<br>
         TRR: SI56 0110 0603 0347 346<br>
-        Sklic: 7SGK2026<br>
+        Sklic: SI99 7SGK2026<br>
         Namen: 7SGK / Ime in Priimek udeleženca</p>
         <p>Plačilo kotizacije mora biti izvršeno v roku 30 dni. Udeleženci prejmejo predračun na elektronski naslov.</p>
         <p>Rezervacije nočitev: <a href="https://www.lipica.org/sl/prijava-na-kongres/" target="_blank" rel="noreferrer">https://www.lipica.org/sl/prijava-na-kongres/</a> (geslo: <strong>lipica1580</strong>)</p>
@@ -406,36 +501,356 @@ require __DIR__ . '/includes/header.php';
 (function () {
   const form = document.getElementById('registration-form');
   if (!form) return;
+  const totalDisplay = document.getElementById('total-display');
+  const paymentMethod = form.querySelector('select[name="payment_method"]');
+  const qrPanel = document.getElementById('payment-qr-panel');
+  const qrImage = document.getElementById('payment-qr-image');
+  const qrLoader = document.getElementById('payment-qr-loader');
+  const qrNote = document.getElementById('payment-qr-note');
+  const qrInput = document.getElementById('upn_qr_image');
+
+  const paymentRecipient = {
+    prejemnik: 'ZRC SAZU',
+    prnaslov: 'Novi trg 2',
+    prposta: '1000 Ljubljana',
+    trr: 'SI56011006030347346',
+    ref: 'SI997SGK2026',
+    koda: 'GDSV'
+  };
+  let qrDependenciesPromise = null;
+  let qrRenderToken = 0;
 
   function formatEur(value) {
     return value.toFixed(2).replace('.', ',') + ' EUR';
   }
 
+  function truncate(value, maxLength) {
+    return String(value || '').trim().substring(0, maxLength);
+  }
+
+  function getFieldValue(name) {
+    const field = form.elements[name];
+    return field ? String(field.value || '') : '';
+  }
+
+  function hideQrImage() {
+    qrImage.hidden = true;
+    qrImage.removeAttribute('src');
+    qrInput.value = '';
+  }
+
+  function setQrLoading(isLoading) {
+    if (!qrLoader) {
+      return;
+    }
+
+    qrLoader.hidden = !isLoading;
+    qrLoader.setAttribute('aria-hidden', isLoading ? 'false' : 'true');
+  }
+
+  function setQrNote(message) {
+    qrNote.textContent = message;
+    qrNote.hidden = !message;
+  }
+
+  function splitAddress(value) {
+    const normalized = String(value || '')
+      .replace(/\r/g, '\n')
+      .split('\n')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join(', ');
+
+    if (!normalized) {
+      return { address: '', post: '' };
+    }
+
+    const parts = normalized.split(',').map((part) => part.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      return {
+        address: truncate(parts[0], 33),
+        post: truncate(parts.slice(1).join(', '), 33)
+      };
+    }
+
+    return {
+      address: truncate(normalized, 33),
+      post: ''
+    };
+  }
+
+  function deriveInvoiceFields() {
+    const fullName = truncate([
+      getFieldValue('first_name'),
+      getFieldValue('last_name')
+    ].filter(Boolean).join(' '), 255);
+
+    return {
+      invoice_name: getFieldValue('institution').trim() || fullName,
+      invoice_address: getFieldValue('address')
+    };
+  }
+
+  function getInvoiceFields() {
+    return ['invoice_name', 'invoice_address']
+      .map(function (name) {
+        return form.elements[name];
+      })
+      .filter(Boolean);
+  }
+
+  function syncInvoiceFields() {
+    const sameInvoice = !!(form.elements.invoice_same && form.elements.invoice_same.checked);
+    const invoiceFields = getInvoiceFields();
+
+    if (sameInvoice) {
+      const derived = deriveInvoiceFields();
+
+      invoiceFields.forEach(function (field) {
+        if (field.dataset.manualValue === undefined) {
+          field.dataset.manualValue = field.value;
+        }
+
+        field.value = derived[field.name] || '';
+        field.disabled = true;
+      });
+
+      return;
+    }
+
+    invoiceFields.forEach(function (field) {
+      field.disabled = false;
+      if (field.dataset.manualValue !== undefined) {
+        field.value = field.dataset.manualValue;
+        delete field.dataset.manualValue;
+      }
+    });
+  }
+
+  function syncVatIdField() {
+    const vatPayer = !!(form.elements.vat_payer && form.elements.vat_payer.checked);
+    const vatIdField = form.elements.vat_id;
+    if (!vatIdField) {
+      return;
+    }
+
+    vatIdField.disabled = !vatPayer;
+    if (!vatPayer) {
+      vatIdField.value = '';
+    }
+  }
+
+  function resolvePayerDetails() {
+    const fullName = truncate([
+      getFieldValue('first_name'),
+      getFieldValue('last_name')
+    ].filter(Boolean).join(' '), 33);
+
+    if (form.elements.invoice_same && form.elements.invoice_same.checked) {
+      const personalAddress = splitAddress(getFieldValue('address'));
+      return {
+        name: fullName,
+        naslov: personalAddress.address,
+        posta: personalAddress.post
+      };
+    }
+
+    return {
+      name: truncate(getFieldValue('invoice_name') || fullName, 33),
+      naslov: truncate(getFieldValue('invoice_address'), 33),
+      posta: truncate(getFieldValue('invoice_post'), 33)
+    };
+  }
+
   function calculateTotal() {
     let total = 0;
-
-    const selectedRegistration = form.querySelector('#registration_type option:checked');
-    if (selectedRegistration && selectedRegistration.dataset.price) {
-      total += Number(selectedRegistration.dataset.price);
+    const registrationField = form.elements.registration_type;
+    if (registrationField && registrationField.selectedIndex >= 0) {
+      const selectedRegistration = registrationField.options[registrationField.selectedIndex];
+      total += Number(selectedRegistration.getAttribute('data-price') || 0);
     }
 
     const selectedMid = form.querySelector('input[name="mid_excursion"]:checked');
-    if (selectedMid && selectedMid.dataset.price) {
-      total += Number(selectedMid.dataset.price);
+    if (selectedMid) {
+      total += Number(selectedMid.getAttribute('data-price') || 0);
     }
 
     ['post_excursion', 'photo_contest'].forEach((name) => {
-      const field = form.querySelector(`input[name="${name}"]`);
-      if (field && field.checked && field.dataset.price) {
-        total += Number(field.dataset.price);
+      const field = form.elements[name];
+      if (field && field.checked) {
+        total += Number(field.getAttribute('data-price') || 0);
       }
     });
 
-    document.getElementById('total-display').textContent = formatEur(total);
+    totalDisplay.textContent = formatEur(total);
+    return total;
   }
 
-  form.addEventListener('change', calculateTotal);
-  calculateTotal();
+  function buildPurpose(participantName) {
+    return truncate(participantName ? `7SGK / ${participantName}` : '7SGK kotizacija', 42);
+  }
+
+  function buildQrPayload(total) {
+    const payer = resolvePayerDetails();
+    const participantName = truncate([
+      getFieldValue('first_name'),
+      getFieldValue('last_name')
+    ].filter(Boolean).join(' '), 33);
+
+    const fields = [
+      'UPNQR',
+      '',
+      '',
+      '',
+      '',
+      payer.name,
+      payer.naslov,
+      payer.posta,
+      String(Math.round(total * 100)).padStart(11, '0'),
+      '',
+      '',
+      paymentRecipient.koda,
+      buildPurpose(participantName),
+      '',
+      paymentRecipient.trr,
+      paymentRecipient.ref,
+      paymentRecipient.prejemnik,
+      paymentRecipient.prnaslov,
+      paymentRecipient.prposta
+    ];
+
+    fields.push(String(19 + fields.reduce((sum, value) => sum + value.length, 0)).padStart(3, '0'));
+    return fields.join('\n');
+  }
+
+  function buildQrNote(total) {
+    void total;
+    return '';
+  }
+
+  function loadQrDependencies() {
+    if (qrDependenciesPromise) {
+      return qrDependenciesPromise;
+    }
+
+    qrDependenciesPromise = Promise.all([
+      Promise.resolve().then(function () {
+        const dynamicImport = new Function('url', 'return import(url);');
+        return dynamicImport('https://esm.sh/@nuintun/qrcode@5.0.2?bundle');
+      }),
+      Promise.resolve().then(function () {
+        const dynamicImport = new Function('url', 'return import(url);');
+        return dynamicImport('https://esm.sh/iconv-lite@0.6.3?bundle');
+      })
+    ]).then(function (modules) {
+      const qr = modules[0];
+      const iconv = modules[1];
+
+      if (!qr || !qr.Byte || !qr.Charset || !qr.Encoder) {
+        throw new Error('QR knjižnica nima pričakovanih izvozov.');
+      }
+
+      if (!iconv || typeof iconv.encode !== 'function') {
+        throw new Error('Knjižnica za kodiranje znakov ni na voljo.');
+      }
+
+      return { qr: qr, iconv: iconv };
+    });
+
+    return qrDependenciesPromise;
+  }
+
+  function renderQr() {
+    syncInvoiceFields();
+    syncVatIdField();
+
+    const total = calculateTotal();
+    const shouldShow = paymentMethod && paymentMethod.value === 'bančno nakazilo' && total > 0;
+    const note = buildQrNote(total);
+
+    qrPanel.hidden = !shouldShow;
+    setQrNote(note);
+
+    if (!shouldShow) {
+      setQrLoading(false);
+      hideQrImage();
+      return;
+    }
+
+    const currentToken = ++qrRenderToken;
+    setQrNote('');
+    setQrLoading(true);
+
+    loadQrDependencies()
+      .then(function (deps) {
+        if (currentToken !== qrRenderToken) {
+          return;
+        }
+
+        const qr = deps.qr;
+        const iconv = deps.iconv;
+        const encoder = new qr.Encoder({
+          level: 'H',
+          encode: function (content, charset) {
+            const bytes = iconv.encode(content, charset.label);
+            return bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes);
+          }
+        });
+        const encoded = encoder.encode(new qr.Byte(buildQrPayload(total), qr.Charset.ISO_8859_2));
+        const moduleSize = Math.max(4, Math.floor(240 / encoded.size));
+        const margin = moduleSize * 4;
+        const dataUrl = encoded.toDataURL(moduleSize, { margin: margin });
+        if (currentToken !== qrRenderToken) {
+          return;
+        }
+        hideQrImage();
+
+        const previewImage = new Image();
+        previewImage.onload = function () {
+          if (currentToken !== qrRenderToken) {
+            return;
+          }
+
+          qrImage.src = dataUrl;
+          qrImage.hidden = false;
+          qrInput.value = dataUrl;
+          setQrLoading(false);
+          setQrNote(note);
+        };
+        previewImage.onerror = function () {
+          if (currentToken !== qrRenderToken) {
+            return;
+          }
+
+          setQrLoading(false);
+          hideQrImage();
+          setQrNote('QR slike ni bilo mogoče naložiti.');
+        };
+        previewImage.src = dataUrl;
+      })
+      .catch(function (error) {
+        if (currentToken !== qrRenderToken) {
+          return;
+        }
+
+        setQrLoading(false);
+        hideQrImage();
+        qrPanel.hidden = false;
+        setQrNote('QR kode ni bilo mogoče ustvariti. Preverite povezavo do CDN knjižnice ali osvežite stran.');
+        if (window.console && typeof window.console.error === 'function') {
+          window.console.error(error);
+        }
+      });
+  }
+
+  form.addEventListener('change', renderQr);
+  form.addEventListener('input', renderQr);
+  window.addEventListener('pageshow', function () {
+    renderQr();
+  });
+  syncInvoiceFields();
+  syncVatIdField();
+  renderQr();
 })();
 </script>
 <?php endif; ?>

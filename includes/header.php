@@ -5,7 +5,7 @@ $pageTitle = $pageTitle ?? '7. Slovenski geološki kongres';
 $activePage = $activePage ?? 'home';
 
 $menu = [
-    'home' => ['label' => 'Home', 'href' => '/'],
+    'home' => ['label' => 'Domov', 'href' => '/'],
     'pomembni-datumi' => ['label' => 'Pomembni datumi', 'href' => '/pomembni-datumi'],
     'povzetki' => ['label' => 'Povzetki in predstavitve', 'href' => '/povzetki'],
     'registracija' => ['label' => 'Registracija', 'href' => '/registracija'],

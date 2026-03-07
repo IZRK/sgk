@@ -25,6 +25,7 @@ $routes = [
     'prizorisce' => 'prizorisce.php',
     'sponzorji' => 'sponzorji.php',
     'circular' => 'circular.php',
+    'admin' => 'admin.php',
 ];
 
 if (!array_key_exists($slug, $routes)) {
