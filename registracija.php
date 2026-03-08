@@ -2,6 +2,9 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/mail.php';
 
+$turnstileConfigured = sgk_turnstile_is_configured();
+$turnstileSiteKey = sgk_turnstile_site_key();
+
 $registrationPrices = [
     'redna-zgodnja' => 350.00,
     'redna-pozna' => 450.00,
@@ -127,6 +130,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $formData[$key] = isset($_POST[$key]) ? trim((string) $_POST[$key]) : '';
     }
 
+    $turnstile = sgk_turnstile_verify($_POST['cf-turnstile-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? null);
+    if (!$turnstile['success']) {
+        $errors[] = $turnstile['error'];
+    }
+
     if ($formData['invoice_same'] === '1') {
         $formData = array_merge($formData, deriveInvoiceFields($formData));
     }
@@ -167,12 +175,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     }
 
     if (empty($errors)) {
-        $configuredRecipient = getenv('FORM_RECIPIENT') ?: 'astrid.svara@zrc-sazu.si';
-        $recipients = array_values(array_unique([
-            $configuredRecipient,
-            'astrid.svara@zrc-sazu.si',
-            'zan@krejzi.si',
-        ]));
+        $configuredRecipients = getenv('FORM_RECIPIENTS') ?: 'astrid.svara@zrc-sazu.si,zan@krejzi.si';
+        $configuredRecipientList = preg_split('/[\s,;|]+/', $configuredRecipients) ?: [];
+        $recipients = array_values(array_unique(array_filter(array_merge(
+            [$formData['email']],
+            array_map('trim', $configuredRecipientList)
+        ))));
         $senderName = getenv('SENDER') ?: 'ZRC SAZU';
         $qrImage = null;
         $qrImageCid = null;
@@ -480,6 +488,12 @@ require __DIR__ . '/includes/header.php';
         </div>
       </article>
 
+      <?php if ($turnstileConfigured): ?>
+        <div class="turnstile-wrap">
+          <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>" data-theme="light"></div>
+        </div>
+      <?php endif; ?>
+
       <button type="submit" class="btn btn-primary">Pošlji prijavo</button>
       </form>
 
@@ -497,6 +511,9 @@ require __DIR__ . '/includes/header.php';
   </div>
 </section>
 <?php if ($success === ''): ?>
+<?php if ($turnstileConfigured): ?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<?php endif; ?>
 <script>
 (function () {
   const form = document.getElementById('registration-form');

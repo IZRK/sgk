@@ -53,6 +53,25 @@ Nato odpri:
 composer install
 ```
 
+## Okoljske spremenljivke
+Najprej pripravi lokalno konfiguracijo:
+
+```bash
+cp .env.example .env
+```
+
+Uporabljene spremenljivke v `.env`:
+
+- `SENDER`, `SMTPUSER`, `SMTPPASS`, `SMTPHOST`, `SMTPPORT` za pošiljanje e-pošte
+- `FORM_RECIPIENTS` za prejemnike prijav, ločene z vejico, podpičjem ali `|`
+- `SGK_ADMIN_SALT`, `SGK_ADMIN_HASH` za prijavo v `admin.php`
+- `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` za Cloudflare Turnstile
+
+Cloudflare Turnstile se preverja na:
+
+- `registracija.php`
+- `admin.php`
+
 ## Organizatorji
 <table style="border-collapse: collapse; width: 100%;">
   <tr>

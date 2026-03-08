@@ -828,6 +828,11 @@ h2 {
   font-weight: 700;
 }
 
+.turnstile-wrap {
+  margin-top: 0.2rem;
+  min-height: 66px;
+}
+
 .payment-qr-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(220px, 280px);

@@ -1,13 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
 
-const SGK_ADMIN_SALT = '97#7V$=]11:]RHfp%88S30{lJ3kZ^T0Vns@ym,hcTKCCeFg!';
-const SGK_ADMIN_HASH = '08434bd18e9c5dfa30411472d9aa0a4da720fdc7440899653e99eaf9017aab99e0258356ad119d92dac89aa6dd16eb64083413145f3af647b5d7514dbe8815ef';
 const SGK_ADMIN_SESSION_KEY = 'sgk_admin_authenticated';
 
-function sgk_admin_hash_password(string $password): string
+function sgk_admin_hash_password(string $salt, string $password): string
 {
-    return hash('sha512', SGK_ADMIN_SALT . $password);
+    return hash('sha512', $salt . $password);
 }
 
 function sgk_read_csv_table(string $path): array
@@ -178,7 +176,17 @@ function sgk_format_admin_value(string $column, string $value): array
 }
 
 $loginError = '';
+$adminSalt = trim((string) (getenv('SGK_ADMIN_SALT') ?: ''));
+$adminHash = trim((string) (getenv('SGK_ADMIN_HASH') ?: ''));
+$authConfigured = $adminSalt !== '' && $adminHash !== '';
+$turnstileConfigured = sgk_turnstile_is_configured();
+$turnstileSiteKey = sgk_turnstile_site_key();
 $isAuthenticated = !empty($_SESSION[SGK_ADMIN_SESSION_KEY]);
+
+if (!$authConfigured) {
+    unset($_SESSION[SGK_ADMIN_SESSION_KEY]);
+    $isAuthenticated = false;
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $action = trim((string) ($_POST['action'] ?? 'login'));
@@ -188,13 +196,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $isAuthenticated = false;
     } else {
         $password = (string) ($_POST['password'] ?? '');
-        if (hash_equals(SGK_ADMIN_HASH, sgk_admin_hash_password($password))) {
-            $_SESSION[SGK_ADMIN_SESSION_KEY] = true;
-            $isAuthenticated = true;
+        if (!$authConfigured) {
+            $loginError = 'Admin prijava ni konfigurirana v .env.';
         } else {
-            unset($_SESSION[SGK_ADMIN_SESSION_KEY]);
-            $isAuthenticated = false;
-            $loginError = 'Napačno geslo.';
+            $turnstile = sgk_turnstile_verify($_POST['cf-turnstile-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? null);
+            if (!$turnstile['success']) {
+                $loginError = $turnstile['error'];
+            } elseif (hash_equals($adminHash, sgk_admin_hash_password($adminSalt, $password))) {
+                $_SESSION[SGK_ADMIN_SESSION_KEY] = true;
+                $isAuthenticated = true;
+            } else {
+                unset($_SESSION[SGK_ADMIN_SESSION_KEY]);
+                $isAuthenticated = false;
+                $loginError = 'Napačno geslo.';
+            }
         }
     }
 }
@@ -216,6 +231,9 @@ $rowCount = count($table['rows']);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <?php if ($turnstileConfigured): ?>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <?php endif; ?>
   <style>
     body.admin-page {
       min-height: 100vh;
@@ -271,6 +289,10 @@ $rowCount = count($table['rows']);
     .admin-login form {
       display: grid;
       gap: 0.9rem;
+    }
+
+    .admin-turnstile {
+      min-height: 66px;
     }
 
     .admin-login input[type="password"] {
@@ -422,11 +444,19 @@ $rowCount = count($table['rows']);
         <?php if ($loginError !== ''): ?>
           <div class="admin-alert error"><?= e($loginError) ?></div>
         <?php endif; ?>
+        <?php if (!$turnstileConfigured): ?>
+          <div class="admin-alert info">Turnstile ni konfiguriran v <code>.env</code>.</div>
+        <?php endif; ?>
         <form method="post">
           <input type="hidden" name="action" value="login">
           <label>
             <input type="password" name="password" autocomplete="current-password" required placeholder="Geslo">
           </label>
+          <?php if ($turnstileConfigured): ?>
+            <div class="admin-turnstile">
+              <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>" data-theme="light"></div>
+            </div>
+          <?php endif; ?>
           <button type="submit" class="btn btn-primary">Prijava</button>
         </form>
       </section>
