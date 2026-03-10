@@ -185,7 +185,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $qrImage = null;
         $qrImageCid = null;
 
-        if ($formData['payment_method'] === 'bančno nakazilo') {
+        if ($total > 0) {
             $qrImage = parseImageDataUrl($formData['upn_qr_image']);
             if ($qrImage !== null) {
                 $qrImageCid = 'upn_qr_' . md5($formData['email'] . '|' . number_format($total, 2, '.', ''));
@@ -477,8 +477,8 @@ require __DIR__ . '/includes/header.php';
 
       <article class="panel payment-qr-panel" id="payment-qr-panel" hidden>
         <div class="payment-qr-copy">
-          <h3>UPN QR za SEPA plačilo</h3>
-          <p>Če izberete bančno nakazilo, lahko plačilo izvedete s skenom QR kode na zaslonu. Ista slika se ob oddaji obrazca priloži tudi v e-mail prijave.</p>
+          <h3>UPN QR za plačilo</h3>
+          <p>QR koda za nakazilo je na voljo takoj, ko se izračuna znesek prijave. Ista slika se ob oddaji obrazca priloži tudi v e-mail prijave.</p>
           <p class="payment-qr-note" id="payment-qr-note"></p>
         </div>
         <div class="payment-qr-visual">
@@ -783,7 +783,7 @@ require __DIR__ . '/includes/header.php';
     syncVatIdField();
 
     const total = calculateTotal();
-    const shouldShow = paymentMethod && paymentMethod.value === 'bančno nakazilo' && total > 0;
+    const shouldShow = total > 0;
     const note = buildQrNote(total);
 
     qrPanel.hidden = !shouldShow;
