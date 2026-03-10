@@ -223,6 +223,19 @@ h2 {
   font-size: .84rem;
 }
 
+.partner-logo {
+  display: block;
+  max-width: 100%;
+  height: 68px;
+  width: auto;
+  margin-top: 1rem;
+  object-fit: contain;
+}
+
+.partner-logo-sgd {
+  height: 78px;
+}
+
 .topics { margin: 0; padding-left: 1rem; }
 .topics li + li { margin-top: .45rem; }
 
@@ -293,6 +306,45 @@ h2 {
 
 .site-footer a:hover {
   text-decoration: underline;
+}
+
+.program-lead {
+  max-width: none;
+}
+
+.resource-link-list {
+  display: grid;
+  gap: .8rem;
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .8rem .9rem;
+  border: 1px solid var(--line);
+  border-radius: .85rem;
+  background: rgba(13, 90, 114, 0.04);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.resource-link:hover {
+  border-color: rgba(13, 90, 114, 0.3);
+  background: rgba(13, 90, 114, 0.08);
+}
+
+.resource-link-logo {
+  flex: 0 0 auto;
+  width: 84px;
+  max-width: 84px;
+  max-height: 44px;
+  height: auto;
+  object-fit: contain;
+}
+
+.resource-link span {
+  overflow-wrap: anywhere;
 }
 
 /* Circular page */
@@ -829,6 +881,8 @@ h2 {
 }
 
 .turnstile-wrap {
+  display: flex;
+  justify-content: center;
   margin-top: 0.2rem;
   min-height: 66px;
 }

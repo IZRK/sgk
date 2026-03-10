@@ -327,7 +327,8 @@ require __DIR__ . '/includes/header.php';
             <tr><td>Študentska/upokojenska** pozna</td><td>250,00</td><td>** z ustreznim dokazilom</td></tr>
           </tbody>
         </table>
-        <p>Stroški namestitve niso vključeni v kotizacijo.</p>
+        <p>Kotizacija vključuje: kongresni paket s tiskanim zbornikom in vodnikom, okrepčila med odmori, kosilo prvi in drugi dan, kongresno večerjo prvi dan, zaključno večerjo drugi dan.</p>
+        <p>Stroški namestitve niso vključeni v kotizacijo. Rezervacija in plačilo namestitve potekata preko povezave: <a href="https://www.lipica.org/sl/prijava-na-kongres/" target="_blank" rel="noreferrer">https://www.lipica.org/sl/prijava-na-kongres/</a>. Z geslom <strong>lipica1580</strong> dostopate do kongresnih cen namestitve. Povezava bo na voljo tudi ob prijavi, na spletni strani kongresa. Kongresne cene za namestitve so namenjene udeležencem kongresa.</p>
       </article>
 
       <?php if (!empty($errors)): ?>
@@ -502,7 +503,7 @@ require __DIR__ . '/includes/header.php';
         <p>ZRC SAZU, Novi trg 2, 1000 Ljubljana<br>
         ID za DDV: SI38048183<br>
         TRR: SI56 0110 0603 0347 346<br>
-        Sklic: SI99 7SGK2026<br>
+        Sklic: SI00 7SGK2026<br>
         Namen: 7SGK / Ime in Priimek udeleženca</p>
         <p>Plačilo kotizacije mora biti izvršeno v roku 30 dni. Udeleženci prejmejo predračun na elektronski naslov.</p>
         <p>Rezervacije nočitev: <a href="https://www.lipica.org/sl/prijava-na-kongres/" target="_blank" rel="noreferrer">https://www.lipica.org/sl/prijava-na-kongres/</a> (geslo: <strong>lipica1580</strong>)</p>
@@ -531,7 +532,7 @@ require __DIR__ . '/includes/header.php';
     prnaslov: 'Novi trg 2',
     prposta: '1000 Ljubljana',
     trr: 'SI56011006030347346',
-    ref: 'SI997SGK2026',
+    ref: 'SI007SGK2026',
     koda: 'GDSV'
   };
   let qrDependenciesPromise = null;

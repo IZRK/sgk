@@ -46,7 +46,7 @@ require __DIR__ . '/includes/header.php';
 <section>
   <div class="container home-flow">
     <h2>Dobrodošli</h2>
-    <p class="lead">7. Slovenski geološki kongres je osrednji nacionalni strokovno-znanstveni forum za izmenjavo novih raziskovalnih rezultatov geologije in sorodnih ved.</p>
+    <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Prijave se odprejo v ponedeljek, 16. 3. 2026. Lepo vabljeni!</p>
 
     <div class="cta">
       <a class="btn btn-primary" href="/circular">1. obvestilo</a>
@@ -78,8 +78,7 @@ require __DIR__ . '/includes/header.php';
     <div class="grid">
       <article class="panel">
         <h3>Namen kongresa</h3>
-        <p>Kongres povezuje raziskovalce, strokovnjake in uporabnike geoloških znanj, s posebnim poudarkom na geologiji krasa in kraških kamnin.</p>
-        <p>Predstavlja osrednji nacionalni prostor za strokovno razpravo, predstavitev aktualnih raziskav ter povezovanje različnih področij geologije in sorodnih ved.</p>
+        <p>Geološki kongres je osrednji geološki dogodek, organiziran vsake štiri leta, kjer se odvija strokovna razprava, predstavitev aktualnih raziskav in povezovanje različnih področij geologije in sorodnih ved. Njegov namen je povezovanje raziskovalcev, strokovnjakov in vseh, ki uporabljajo geološka znanja. Letošnji kongres ima poudarek na geologiji krasa in kraških kamninah.</p>
       </article>
       <article class="panel">
         <h3>Kontakt</h3>
@@ -96,10 +95,12 @@ require __DIR__ . '/includes/header.php';
         <h3>Organizator</h3>
         <p>Inštitut za raziskovanje krasa ZRC SAZU<br>Titov trg 2, 6230 Postojna</p>
         <p>Kontaktna oseba: Astrid Švara (<a href="mailto:astrid.svara@zrc-sazu.si">astrid.svara@zrc-sazu.si</a>)</p>
+        <img class="partner-logo partner-logo-zrc" src="zrcsazu.svg" alt="ZRC SAZU" loading="lazy" />
       </article>
       <article class="panel">
         <h3>Soorganizator</h3>
         <p>Slovensko geološko društvo</p>
+        <img class="partner-logo partner-logo-sgd" src="sgd.svg" alt="Slovensko geološko društvo" loading="lazy" />
       </article>
     </div>
 

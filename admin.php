@@ -292,7 +292,12 @@ $rowCount = count($table['rows']);
     }
 
     .admin-turnstile {
+      width: 100%;
       min-height: 66px;
+    }
+
+    .admin-turnstile .cf-turnstile {
+      width: 100%;
     }
 
     .admin-login input[type="password"] {
@@ -454,7 +459,7 @@ $rowCount = count($table['rows']);
           </label>
           <?php if ($turnstileConfigured): ?>
             <div class="admin-turnstile">
-              <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>" data-theme="light"></div>
+              <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>" data-theme="light" data-size="flexible"></div>
             </div>
           <?php endif; ?>
           <button type="submit" class="btn btn-primary">Prijava</button>

@@ -6,7 +6,7 @@ require __DIR__ . '/includes/header.php';
 <section>
   <div class="container page-flow">
     <h2>Program kongresa</h2>
-    <p class="lead">Okvirni program se lahko spremeni skladno s številom prejetih prispevkov. Ob spremembah bodo avtorji obveščeni pravočasno.</p>
+    <p class="lead program-lead">Okvirni program se lahko spremeni skladno s številom prejetih prispevkov. Ob spremembah bodo avtorji obveščeni pravočasno.</p>
 
     <article class="panel">
       <h3>Četrtek, 1. 10. 2026 · 1. dan kongresa</h3>
