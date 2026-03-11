@@ -55,6 +55,26 @@ function deriveInvoiceFields(array $formData): array
     ];
 }
 
+function countAbstractWords(string $value): int
+{
+    $value = trim(preg_replace('/\s+/u', ' ', $value) ?? '');
+    if ($value === '') {
+        return 0;
+    }
+
+    preg_match_all('/\S+/u', $value, $matches);
+    return count($matches[0]);
+}
+
+function parseKeywords(string $value): array
+{
+    $items = preg_split('/[,;\n\r]+/u', $value) ?: [];
+    return array_values(array_filter(
+        array_map(static fn (string $item): string => trim($item), $items),
+        static fn (string $item): bool => $item !== ''
+    ));
+}
+
 $formData = [
     'first_name' => '',
     'last_name' => '',
@@ -81,7 +101,12 @@ $formData = [
     'diet_gluten' => '',
     'diet_none' => '',
     'diet_other' => '',
-    'presentation_type' => '',
+    'presentation_type' => 'Brez predstavitve',
+    'title' => '',
+    'authors' => '',
+    'institutions' => '',
+    'keywords' => '',
+    'abstract_text' => '',
     'notes' => '',
     'upn_qr_image' => '',
 ];
@@ -89,6 +114,8 @@ $formData = [
 $errors = [];
 $success = '';
 $total = 0.0;
+$abstractWordCount = 0;
+$keywordCount = 0;
 
 function saveSubmissionToCsv(string $csvPath, array $row): bool
 {
@@ -162,6 +189,42 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $errors[] = 'Izberite obliko predstavitve.';
     }
 
+    $requiresAbstract = in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true);
+    $abstractWordCount = countAbstractWords($formData['abstract_text']);
+    $keywordList = parseKeywords($formData['keywords']);
+    $keywordCount = count($keywordList);
+
+    if ($requiresAbstract) {
+        if ($formData['title'] === '') {
+            $errors[] = 'Vnesite naslov prispevka.';
+        }
+        if ($formData['authors'] === '') {
+            $errors[] = 'Vnesite avtorje.';
+        }
+        if ($formData['institutions'] === '') {
+            $errors[] = 'Vnesite institucije.';
+        }
+        if ($formData['abstract_text'] === '') {
+            $errors[] = 'Vnesite povzetek.';
+        } elseif ($abstractWordCount > 300) {
+            $errors[] = 'Povzetek lahko vsebuje največ 300 besed.';
+        }
+        if ($keywordCount === 0) {
+            $errors[] = 'Vnesite ključne besede.';
+        } elseif ($keywordCount > 7) {
+            $errors[] = 'Vnesete lahko največ 7 ključnih besed.';
+        }
+    } else {
+        $formData['title'] = '';
+        $formData['authors'] = '';
+        $formData['institutions'] = '';
+        $formData['keywords'] = '';
+        $formData['abstract_text'] = '';
+        $keywordList = [];
+        $keywordCount = 0;
+        $abstractWordCount = 0;
+    }
+
     if (array_key_exists($formData['registration_type'], $registrationPrices)) {
         $total += $registrationPrices[$formData['registration_type']];
     }
@@ -217,6 +280,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'Skupaj za plačilo (EUR)' => number_format($total, 2, ',', '.'),
         ];
 
+        if ($requiresAbstract) {
+            $rows['Naslov prispevka'] = $formData['title'];
+            $rows['Avtorji'] = $formData['authors'];
+            $rows['Institucije'] = $formData['institutions'];
+            $rows['Ključne besede'] = implode(', ', $keywordList);
+            $rows['Število ključnih besed'] = (string) $keywordCount;
+            $rows['Povzetek'] = $formData['abstract_text'];
+            $rows['Število besed'] = (string) $abstractWordCount;
+        }
+
         foreach ($rows as $label => $value) {
             $message .= '<tr>';
             $message .= '<td style="border:1px solid #d4dee3;padding:8px;font-weight:700;">' . e($label) . '</td>';
@@ -258,6 +331,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'diet_none' => $formData['diet_none'] === '1' ? '1' : '0',
             'diet_other' => $formData['diet_other'],
             'presentation_type' => $formData['presentation_type'],
+            'title' => $formData['title'],
+            'authors' => $formData['authors'],
+            'institutions' => $formData['institutions'],
+            'keywords' => implode(', ', $keywordList),
+            'keyword_count' => (string) $keywordCount,
+            'abstract_text' => $formData['abstract_text'],
+            'abstract_word_count' => (string) $abstractWordCount,
             'notes' => $formData['notes'],
             'total_eur' => number_format($total, 2, '.', ''),
             'upn_qr_included' => $qrImageCid !== null ? '1' : '0',
@@ -463,6 +543,31 @@ require __DIR__ . '/includes/header.php';
       <label class="inline-check"><input type="radio" name="presentation_type" value="Plakat" <?= $formData['presentation_type'] === 'Plakat' ? 'checked' : '' ?>> Plakat</label>
       <label class="inline-check"><input type="radio" name="presentation_type" value="Brez predstavitve" <?= $formData['presentation_type'] === 'Brez predstavitve' ? 'checked' : '' ?>> Brez predstavitve</label>
 
+      <div class="abstract-fields" id="abstract-fields" hidden>
+        <h3>Povzetek prispevka</h3>
+        <div class="form-grid">
+          <label class="form-span-full">Naslov prispevka*
+            <input type="text" name="title" id="title" value="<?= e($formData['title']) ?>">
+          </label>
+          <label class="form-span-full">Avtorji*
+            <textarea name="authors" id="authors" rows="3"><?= e($formData['authors']) ?></textarea>
+            <p class="form-note">Vnesite vse avtorje v vrstnem redu, kot naj bodo navedeni v programu in zborniku.</p>
+          </label>
+          <label class="form-span-full">Institucije*
+            <textarea name="institutions" id="institutions" rows="3"><?= e($formData['institutions']) ?></textarea>
+          </label>
+          <label>Ključne besede*
+            <input type="text" name="keywords" id="keywords" value="<?= e($formData['keywords']) ?>" placeholder="npr. kras, hidrogeologija, sedimentologija">
+            <p class="form-note">Ločite jih z vejicami.</p>
+            <p class="form-counter" id="keywords-counter"><?= e((string) $keywordCount) ?> / 7 ključnih besed</p>
+          </label>
+          <label class="form-span-full">Povzetek*
+            <textarea name="abstract_text" id="abstract_text" rows="10"><?= e($formData['abstract_text']) ?></textarea>
+            <p class="form-counter" id="abstract-counter"><?= e((string) $abstractWordCount) ?> / 300 besed</p>
+          </label>
+        </div>
+      </div>
+
       <label>Opombe
         <textarea name="notes" rows="4"><?= e($formData['notes']) ?></textarea>
       </label>
@@ -526,6 +631,10 @@ require __DIR__ . '/includes/header.php';
   const qrLoader = document.getElementById('payment-qr-loader');
   const qrNote = document.getElementById('payment-qr-note');
   const qrInput = document.getElementById('upn_qr_image');
+  const abstractFields = document.getElementById('abstract-fields');
+  const abstractFieldIds = ['title', 'authors', 'institutions', 'keywords', 'abstract_text'];
+  const abstractCounter = document.getElementById('abstract-counter');
+  const keywordsCounter = document.getElementById('keywords-counter');
 
   const paymentRecipient = {
     prejemnik: 'ZRC SAZU',
@@ -549,6 +658,57 @@ require __DIR__ . '/includes/header.php';
   function getFieldValue(name) {
     const field = form.elements[name];
     return field ? String(field.value || '') : '';
+  }
+
+  function countWords(value) {
+    const normalized = String(value || '').trim().replace(/\s+/g, ' ');
+    if (!normalized) return 0;
+    return normalized.split(' ').filter(Boolean).length;
+  }
+
+  function countKeywords(value) {
+    return String(value || '')
+      .split(/[,;\n\r]+/)
+      .map(function (item) { return item.trim(); })
+      .filter(Boolean)
+      .length;
+  }
+
+  function syncAbstractFields() {
+    const presentationType = getFieldValue('presentation_type');
+    const shouldShow = presentationType === 'Predavanje' || presentationType === 'Plakat';
+
+    if (abstractFields) {
+      abstractFields.hidden = !shouldShow;
+    }
+
+    abstractFieldIds.forEach(function (id) {
+      const field = document.getElementById(id);
+      if (!field) return;
+      field.required = shouldShow;
+      if (!shouldShow) {
+        field.value = '';
+      }
+    });
+
+    renderAbstractCounters();
+  }
+
+  function renderAbstractCounters() {
+    const abstractField = document.getElementById('abstract_text');
+    const keywordsField = document.getElementById('keywords');
+
+    if (abstractField && abstractCounter) {
+      const words = countWords(abstractField.value);
+      abstractCounter.textContent = words + ' / 300 besed';
+      abstractCounter.classList.toggle('is-invalid', words > 300);
+    }
+
+    if (keywordsField && keywordsCounter) {
+      const items = countKeywords(keywordsField.value);
+      keywordsCounter.textContent = items + ' / 7 ključnih besed';
+      keywordsCounter.classList.toggle('is-invalid', items > 7);
+    }
   }
 
   function hideQrImage() {
@@ -781,6 +941,7 @@ require __DIR__ . '/includes/header.php';
   function renderQr() {
     syncInvoiceFields();
     syncVatIdField();
+    syncAbstractFields();
 
     const total = calculateTotal();
     const shouldShow = total > 0;
@@ -868,6 +1029,7 @@ require __DIR__ . '/includes/header.php';
   });
   syncInvoiceFields();
   syncVatIdField();
+  syncAbstractFields();
   renderQr();
 })();
 </script>

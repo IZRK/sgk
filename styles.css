@@ -867,6 +867,16 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.abstract-fields {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.4rem;
+}
+
+.abstract-fields[hidden] {
+  display: none !important;
+}
+
 .registration-form label,
 .registration-form legend {
   font-size: 0.93rem;
@@ -1038,29 +1048,6 @@ h2 {
   color: #7f1f1f;
 }
 
-.admin-tabs {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.6rem;
-  padding: 0 16px;
-}
-
-.admin-tab {
-  text-decoration: none;
-  color: #17313a;
-  border: 1px solid rgba(17, 33, 40, 0.1);
-  border-radius: 999px;
-  padding: 0.62rem 0.95rem;
-  background: rgba(255, 255, 255, 0.88);
-  font-weight: 500;
-}
-
-.admin-tab.is-active {
-  color: #fff;
-  background: linear-gradient(135deg, #0f6984, #0d4256);
-  border-color: transparent;
-}
 
 @media (max-width: 1130px) and (min-width: 921px) {
   .main-menu-links {
