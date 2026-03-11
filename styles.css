@@ -154,6 +154,10 @@ body {
   margin-top: 1.6rem;
 }
 
+.home-flow .lead {
+  max-width: none;
+}
+
 .page-flow > * + * {
   margin-top: 1.6rem;
 }

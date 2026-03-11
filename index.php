@@ -100,7 +100,7 @@ require __DIR__ . '/includes/header.php';
       <article class="panel">
         <h3>Soorganizator</h3>
         <p>Slovensko geološko društvo</p>
-        <img class="partner-logo partner-logo-sgd" src="sgd.svg" alt="Slovensko geološko društvo" loading="lazy" />
+        <img class="partner-logo partner-logo-sgd" src="sgd.png" alt="Slovensko geološko društvo" loading="lazy" />
       </article>
     </div>
 
