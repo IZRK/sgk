@@ -268,11 +268,20 @@ h2 {
 }
 
 .btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
   padding: .8rem 1.2rem;
+  min-height: 44px;
   border-radius: 999px;
+  font: inherit;
+  line-height: 1;
   font-weight: 700;
   border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-primary {
@@ -815,6 +824,13 @@ h2 {
   gap: 0.9rem;
 }
 
+.registration-form.registration-form-embedded {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .registration-form h3 {
   margin: 0.5rem 0 0;
   color: var(--accent);
@@ -823,10 +839,32 @@ h2 {
   font-size: .85rem;
 }
 
+.form-note {
+  margin: 0.15rem 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.form-counter {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+.form-counter.is-invalid {
+  color: #8f2e2e;
+  font-weight: 600;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
+}
+
+.form-span-full {
+  grid-column: 1 / -1;
 }
 
 .registration-form label,
@@ -998,6 +1036,30 @@ h2 {
   background: #fff3f3;
   border-color: #e4bbbb;
   color: #7f1f1f;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+  padding: 0 16px;
+}
+
+.admin-tab {
+  text-decoration: none;
+  color: #17313a;
+  border: 1px solid rgba(17, 33, 40, 0.1);
+  border-radius: 999px;
+  padding: 0.62rem 0.95rem;
+  background: rgba(255, 255, 255, 0.88);
+  font-weight: 500;
+}
+
+.admin-tab.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #0f6984, #0d4256);
+  border-color: transparent;
 }
 
 @media (max-width: 1130px) and (min-width: 921px) {

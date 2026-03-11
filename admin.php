@@ -109,6 +109,14 @@ function sgk_format_admin_label(string $column): string
         'notes' => 'Opombe',
         'total_eur' => 'Skupaj EUR',
         'upn_qr_included' => 'UPN QR',
+        'contact_name' => 'Kontaktna oseba',
+        'title' => 'Naslov prispevka',
+        'authors' => 'Avtorji',
+        'institutions' => 'Institucije',
+        'keywords' => 'Ključne besede',
+        'keyword_count' => 'Št. ključnih besed',
+        'abstract_text' => 'Povzetek',
+        'abstract_word_count' => 'Št. besed',
     ];
 
     return $labels[$column] ?? ucwords(str_replace('_', ' ', $column));
@@ -214,8 +222,35 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     }
 }
 
+$tabs = [
+    'registracija' => [
+        'label' => 'Registracija',
+        'path' => __DIR__ . '/.form/submissions.csv',
+    ],
+    'povzetki' => [
+        'label' => 'Povzetki',
+        'path' => __DIR__ . '/.form/povzetki.csv',
+    ],
+];
+
+$activeTab = trim((string) ($_GET['tab'] ?? 'registracija'));
+if (!array_key_exists($activeTab, $tabs)) {
+    $activeTab = 'registracija';
+}
+
+if ($isAuthenticated && (($_GET['download'] ?? '') === 'csv')) {
+    $csvPath = $tabs[$activeTab]['path'];
+    if (is_file($csvPath)) {
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $activeTab . '.csv"');
+        header('Content-Length: ' . (string) filesize($csvPath));
+        readfile($csvPath);
+        exit;
+    }
+}
+
 $table = $isAuthenticated
-    ? sgk_read_csv_table(__DIR__ . '/.form/submissions.csv')
+    ? sgk_read_csv_table($tabs[$activeTab]['path'])
     : ['headers' => [], 'rows' => [], 'error' => null];
 
 $rowCount = count($table['rows']);
@@ -244,7 +279,7 @@ $rowCount = count($table['rows']);
     }
 
     .admin-shell {
-      width: min(1600px, 98vw);
+      width: 100%;
       margin: 0 auto;
       padding: 12px 0 18px;
     }
@@ -255,6 +290,7 @@ $rowCount = count($table['rows']);
       justify-content: space-between;
       gap: 0.75rem;
       margin-bottom: 0.45rem;
+      padding: 0 16px;
     }
 
     .admin-kicker {
@@ -316,24 +352,34 @@ $rowCount = count($table['rows']);
     }
 
     .admin-stat {
-      padding: 0.48rem 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.8rem 1.2rem;
       border: 1px solid rgba(13, 90, 114, 0.18);
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.78);
       color: #123b49;
-      font-size: 0.86rem;
-      font-weight: 600;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
     .admin-table-card {
       overflow: hidden;
       padding: 0;
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+      box-shadow: none;
+      backdrop-filter: none;
     }
 
     .admin-table-wrap {
       overflow: auto;
       margin: 0;
-      max-height: calc(100vh - 110px);
+      max-height: calc(100vh - 150px);
     }
 
     .admin-table {
@@ -351,7 +397,6 @@ $rowCount = count($table['rows']);
       border-bottom: 1px solid rgba(17, 33, 40, 0.08);
       text-align: left;
       vertical-align: top;
-      white-space: nowrap;
     }
 
     .admin-table th {
@@ -363,11 +408,14 @@ $rowCount = count($table['rows']);
       font-size: 0.76rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .admin-table td {
       background: rgba(255, 255, 255, 0.92);
       color: #13272f;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .admin-table tbody tr:nth-child(even) td {
@@ -400,6 +448,7 @@ $rowCount = count($table['rows']);
 
     .admin-inline-form {
       margin: 0;
+      display: flex;
     }
 
     .admin-alert {
@@ -428,7 +477,6 @@ $rowCount = count($table['rows']);
 
     @media (max-width: 760px) {
       .admin-shell {
-        width: min(100%, 94vw);
         padding-top: 14px;
       }
 
@@ -469,16 +517,24 @@ $rowCount = count($table['rows']);
       <section class="admin-bar">
         <div>
           <p class="admin-kicker">Admin</p>
-          <h1 class="admin-title">Pregled prijav</h1>
+          <h1 class="admin-title">Pregled vnosov</h1>
         </div>
         <div class="admin-toolbar">
-          <span class="admin-stat"><?= e((string) $rowCount) ?> prijav</span>
+          <span class="admin-stat"><?= e($tabs[$activeTab]['label']) ?>: <?= e((string) $rowCount) ?> vnosov</span>
+          <a class="btn btn-secondary" href="/">Nazaj na domačo stran</a>
+          <a class="btn btn-secondary" href="/admin?tab=<?= e($activeTab) ?>&download=csv">Prenesi CSV</a>
           <form method="post" class="admin-inline-form">
             <input type="hidden" name="action" value="logout">
             <button type="submit" class="btn btn-secondary">Odjava</button>
           </form>
         </div>
       </section>
+
+      <nav class="admin-tabs" aria-label="Admin zavihki">
+        <?php foreach ($tabs as $tabKey => $tab): ?>
+          <a class="admin-tab <?= $tabKey === $activeTab ? 'is-active' : '' ?>" href="/admin?tab=<?= e($tabKey) ?>"><?= e($tab['label']) ?></a>
+        <?php endforeach; ?>
+      </nav>
 
       <section class="admin-card admin-table-card">
 
