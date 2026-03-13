@@ -5,6 +5,14 @@ require_once __DIR__ . '/includes/mail.php';
 $turnstileConfigured = sgk_turnstile_is_configured();
 $turnstileSiteKey = sgk_turnstile_site_key();
 
+$registrationSchedule = [
+    'today' => date('Y-m-d'),
+    'registration_early' => ['start' => '2026-03-01', 'end' => '2026-05-29'],
+    'registration_late' => ['start' => '2026-05-30', 'end' => '2026-07-20'],
+    'abstract_submission' => ['start' => '2026-03-01', 'end' => '2026-07-20'],
+    'photo_contest' => ['start' => '2026-03-01', 'end' => '2026-09-01'],
+];
+
 $registrationPrices = [
     'redna-zgodnja' => 350.00,
     'redna-pozna' => 450.00,
@@ -22,6 +30,60 @@ $registrationLabels = [
     'studentska-zgodnja' => 'Študentska/upokojenska zgodnja',
     'studentska-pozna' => 'Študentska/upokojenska pozna',
 ];
+
+$registrationTypeOptions = [
+    'redna-zgodnja' => 'Redna zgodnja (350,00)',
+    'redna-pozna' => 'Redna pozna (450,00)',
+    'redna-zgodnja-sgd' => 'Redna zgodnja za člane SGD (300,00)',
+    'redna-pozna-sgd' => 'Redna pozna za člane SGD (400,00)',
+    'studentska-zgodnja' => 'Študentska/upokojenska zgodnja (200,00)',
+    'studentska-pozna' => 'Študentska/upokojenska pozna (250,00)',
+];
+
+$registrationOptionPeriods = [
+    'redna-zgodnja' => 'registration_early',
+    'redna-zgodnja-sgd' => 'registration_early',
+    'studentska-zgodnja' => 'registration_early',
+    'redna-pozna' => 'registration_late',
+    'redna-pozna-sgd' => 'registration_late',
+    'studentska-pozna' => 'registration_late',
+];
+
+function isWithinScheduleWindow(array $window, ?string $date = null): bool
+{
+    $date = $date ?? date('Y-m-d');
+    $start = $window['start'] ?? null;
+    $end = $window['end'] ?? null;
+
+    if ($start !== null && $date < $start) {
+        return false;
+    }
+
+    if ($end !== null && $date > $end) {
+        return false;
+    }
+
+    return true;
+}
+
+function isRegistrationOptionAvailable(string $option, array $schedule, array $optionPeriods): bool
+{
+    $periodKey = $optionPeriods[$option] ?? null;
+    if ($periodKey === null || !isset($schedule[$periodKey])) {
+        return false;
+    }
+
+    return isWithinScheduleWindow($schedule[$periodKey], $schedule['today'] ?? null);
+}
+
+function isPresentationSelectionAvailable(string $presentationType, array $schedule): bool
+{
+    if ($presentationType === 'Brez predstavitve') {
+        return true;
+    }
+
+    return isWithinScheduleWindow($schedule['abstract_submission'] ?? [], $schedule['today'] ?? null);
+}
 
 function parseImageDataUrl(string $value): ?array
 {
@@ -116,6 +178,12 @@ $success = '';
 $total = 0.0;
 $abstractWordCount = 0;
 $keywordCount = 0;
+$availableRegistrationTypes = array_filter(
+    array_keys($registrationPrices),
+    static fn (string $option): bool => isRegistrationOptionAvailable($option, $registrationSchedule, $registrationOptionPeriods)
+);
+$abstractSubmissionOpen = isWithinScheduleWindow($registrationSchedule['abstract_submission'], $registrationSchedule['today']);
+$photoContestOpen = isWithinScheduleWindow($registrationSchedule['photo_contest'], $registrationSchedule['today']);
 
 function saveSubmissionToCsv(string $csvPath, array $row): bool
 {
@@ -181,12 +249,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     }
     if (!array_key_exists($formData['registration_type'], $registrationPrices)) {
         $errors[] = 'Izberite vrsto kotizacije.';
+    } elseif (!in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
+        $errors[] = 'Izbrana vrsta kotizacije trenutno ni na voljo.';
+        $formData['registration_type'] = '';
     }
     if ($formData['payment_method'] === '') {
         $errors[] = 'Izberite način plačila.';
     }
     if ($formData['presentation_type'] === '') {
         $errors[] = 'Izberite obliko predstavitve.';
+    } elseif (!isPresentationSelectionAvailable($formData['presentation_type'], $registrationSchedule)) {
+        $errors[] = 'Oddaja prispevkov trenutno ni odprta.';
+        $formData['presentation_type'] = 'Brez predstavitve';
     }
 
     $requiresAbstract = in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true);
@@ -225,7 +299,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $abstractWordCount = 0;
     }
 
-    if (array_key_exists($formData['registration_type'], $registrationPrices)) {
+    if ($formData['photo_contest'] === '1' && !$photoContestOpen) {
+        $errors[] = 'Prijava na fotografski natečaj trenutno ni odprta.';
+        $formData['photo_contest'] = '';
+    }
+
+    if (in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
         $total += $registrationPrices[$formData['registration_type']];
     }
 
@@ -474,12 +553,14 @@ require __DIR__ . '/includes/header.php';
         <label>Vrsta kotizacije*
           <select name="registration_type" id="registration_type" required>
             <option value="">Izberite</option>
-            <option value="redna-zgodnja" data-price="350" <?= $formData['registration_type'] === 'redna-zgodnja' ? 'selected' : '' ?>>Redna zgodnja (350,00)</option>
-            <option value="redna-pozna" data-price="450" <?= $formData['registration_type'] === 'redna-pozna' ? 'selected' : '' ?>>Redna pozna (450,00)</option>
-            <option value="redna-zgodnja-sgd" data-price="300" <?= $formData['registration_type'] === 'redna-zgodnja-sgd' ? 'selected' : '' ?>>Redna zgodnja za člane SGD (300,00)</option>
-            <option value="redna-pozna-sgd" data-price="400" <?= $formData['registration_type'] === 'redna-pozna-sgd' ? 'selected' : '' ?>>Redna pozna za člane SGD (400,00)</option>
-            <option value="studentska-zgodnja" data-price="200" <?= $formData['registration_type'] === 'studentska-zgodnja' ? 'selected' : '' ?>>Študentska/upokojenska zgodnja (200,00)</option>
-            <option value="studentska-pozna" data-price="250" <?= $formData['registration_type'] === 'studentska-pozna' ? 'selected' : '' ?>>Študentska/upokojenska pozna (250,00)</option>
+            <?php foreach ($registrationTypeOptions as $value => $label): ?>
+              <?php if (!in_array($value, $availableRegistrationTypes, true)) { continue; } ?>
+              <option
+                value="<?= e($value) ?>"
+                data-price="<?= e((string) $registrationPrices[$value]) ?>"
+                <?= $formData['registration_type'] === $value ? 'selected' : '' ?>
+              ><?= e($label) ?></option>
+            <?php endforeach; ?>
           </select>
         </label>
 
@@ -502,7 +583,7 @@ require __DIR__ . '/includes/header.php';
 
       <div class="form-grid">
         <label class="inline-check"><input type="checkbox" name="post_excursion" value="1" data-price="40" <?= $formData['post_excursion'] === '1' ? 'checked' : '' ?>> Pokongresna ekskurzija (3. 10. 2026) - 40,00</label>
-        <label class="inline-check"><input type="checkbox" name="photo_contest" value="1" data-price="0" <?= $formData['photo_contest'] === '1' ? 'checked' : '' ?>> Sodelovanje na fotografskem natečaju (0,00)</label>
+        <label class="inline-check"><input type="checkbox" name="photo_contest" value="1" data-price="0" <?= $formData['photo_contest'] === '1' ? 'checked' : '' ?> <?= $photoContestOpen ? '' : 'disabled' ?>> Sodelovanje na fotografskem natečaju (0,00)</label>
       </div>
 
       <h3>Kongresna majica</h3>
@@ -539,8 +620,8 @@ require __DIR__ . '/includes/header.php';
       </label>
 
       <h3>Predstavitev*</h3>
-      <label class="inline-check"><input type="radio" name="presentation_type" value="Predavanje" <?= $formData['presentation_type'] === 'Predavanje' ? 'checked' : '' ?> required> Predavanje</label>
-      <label class="inline-check"><input type="radio" name="presentation_type" value="Plakat" <?= $formData['presentation_type'] === 'Plakat' ? 'checked' : '' ?>> Plakat</label>
+      <label class="inline-check"><input type="radio" name="presentation_type" value="Predavanje" <?= $formData['presentation_type'] === 'Predavanje' ? 'checked' : '' ?> <?= $abstractSubmissionOpen ? '' : 'disabled' ?> required> Predavanje</label>
+      <label class="inline-check"><input type="radio" name="presentation_type" value="Plakat" <?= $formData['presentation_type'] === 'Plakat' ? 'checked' : '' ?> <?= $abstractSubmissionOpen ? '' : 'disabled' ?>> Plakat</label>
       <label class="inline-check"><input type="radio" name="presentation_type" value="Brez predstavitve" <?= $formData['presentation_type'] === 'Brez predstavitve' ? 'checked' : '' ?>> Brez predstavitve</label>
 
       <div class="abstract-fields" id="abstract-fields" hidden>
@@ -845,7 +926,9 @@ require __DIR__ . '/includes/header.php';
     const registrationField = form.elements.registration_type;
     if (registrationField && registrationField.selectedIndex >= 0) {
       const selectedRegistration = registrationField.options[registrationField.selectedIndex];
-      total += Number(selectedRegistration.getAttribute('data-price') || 0);
+      if (!selectedRegistration.disabled) {
+        total += Number(selectedRegistration.getAttribute('data-price') || 0);
+      }
     }
 
     const selectedMid = form.querySelector('input[name="mid_excursion"]:checked');
@@ -855,7 +938,7 @@ require __DIR__ . '/includes/header.php';
 
     ['post_excursion', 'photo_contest'].forEach((name) => {
       const field = form.elements[name];
-      if (field && field.checked) {
+      if (field && field.checked && !field.disabled) {
         total += Number(field.getAttribute('data-price') || 0);
       }
     });
