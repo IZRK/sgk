@@ -32,6 +32,14 @@ body {
   margin: 0 auto;
 }
 
+.menu-container {
+  width: auto;
+  max-width: calc(100vw - 1rem);
+  padding-inline: 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+
 .hero {
   padding: 0;
 }
@@ -760,6 +768,7 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: max-content;
 }
 
 .main-menu-links {
@@ -768,7 +777,8 @@ h2 {
   justify-content: center;
   flex-wrap: nowrap;
   gap: 0.45rem;
-  width: 100%;
+  width: auto;
+  flex: 0 0 auto;
 }
 
 .menu-link {
@@ -1050,11 +1060,22 @@ h2 {
 
 
 @media (max-width: 1130px) and (min-width: 921px) {
+  .menu-container {
+    width: var(--content-width);
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .main-menu {
+    width: 100%;
+  }
+
   .main-menu-links {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.4rem;
     align-items: stretch;
+    width: 100%;
   }
 
   .menu-link {
@@ -1063,7 +1084,14 @@ h2 {
 }
 
 @media (max-width: 920px) {
+  .menu-container {
+    width: var(--content-width);
+    max-width: none;
+    padding-inline: 0;
+  }
+
   .main-menu {
+    width: 100%;
     justify-content: flex-start;
     flex-direction: column;
     align-items: stretch;

@@ -53,7 +53,7 @@ $menu = [
     <div class="hero-meta right">1. - 3. 10. 2026</div>
   </div>
 
-  <div class="container">
+  <div class="container menu-container">
     <nav class="main-menu" id="main-menu" aria-label="Glavni meni">
       <button class="menu-toggle" type="button" aria-label="Odpri meni" aria-expanded="false" aria-controls="main-menu-links">
         <span class="menu-toggle-bar"></span>
