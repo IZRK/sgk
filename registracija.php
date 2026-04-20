@@ -7,10 +7,11 @@ $turnstileSiteKey = sgk_turnstile_site_key();
 
 $registrationSchedule = [
     'today' => date('Y-m-d'),
-    'registration_early' => ['start' => '2026-03-01', 'end' => '2026-05-29'],
+    'registration_submission' => ['start' => '2026-03-16', 'end' => '2026-07-20'],
+    'registration_early' => ['start' => '2026-03-16', 'end' => '2026-05-29'],
     'registration_late' => ['start' => '2026-05-30', 'end' => '2026-07-20'],
-    'abstract_submission' => ['start' => '2026-03-01', 'end' => '2026-07-20'],
-    'photo_contest' => ['start' => '2026-03-01', 'end' => '2026-09-01'],
+    'abstract_submission' => ['start' => '2026-03-16', 'end' => '2026-07-20'],
+    'photo_contest' => ['start' => '2026-03-16', 'end' => '2026-09-01'],
 ];
 
 $registrationPrices = [
@@ -83,6 +84,262 @@ function isPresentationSelectionAvailable(string $presentationType, array $sched
     }
 
     return isWithinScheduleWindow($schedule['abstract_submission'] ?? [], $schedule['today'] ?? null);
+}
+
+function isRegistrationSubmissionOpen(array $schedule): bool
+{
+    return isWithinScheduleWindow($schedule['registration_submission'] ?? [], $schedule['today'] ?? null);
+}
+
+function registrationEditSalt(): string
+{
+    return trim((string) (getenv('SGK_EDIT_SALT') ?: getenv('SGK_ADMIN_SALT') ?: ''));
+}
+
+function buildSubmissionEditKey(string $submittedAt, string $email): string
+{
+    return hash(
+        'md5',
+        mb_strtolower(trim($email), 'UTF-8') . '|' . trim($submittedAt) . '|' . registrationEditSalt()
+    );
+}
+
+function buildSubmissionEditUrl(string $submittedAt, string $email): string
+{
+    $baseUrl = rtrim(trim((string) (getenv('SGK_SITE_URL') ?: 'https://sgk.zrc-sazu.si')), '/');
+    return $baseUrl . '/registracija?edit=' . buildSubmissionEditKey($submittedAt, $email);
+}
+
+function readSubmissionTable(string $path): array
+{
+    if (!is_file($path)) {
+        return [
+            'headers' => [],
+            'rows' => [],
+            'error' => 'Datoteka s prijavami še ne obstaja.',
+        ];
+    }
+
+    $handle = fopen($path, 'rb');
+    if ($handle === false) {
+        return [
+            'headers' => [],
+            'rows' => [],
+            'error' => 'Datoteke s prijavami ni bilo mogoče odpreti.',
+        ];
+    }
+
+    $rawRows = [];
+    while (($row = fgetcsv($handle, 0, ';')) !== false) {
+        if ($row === [null] || $row === []) {
+            continue;
+        }
+        $rawRows[] = $row;
+    }
+    fclose($handle);
+
+    if ($rawRows === []) {
+        return [
+            'headers' => [],
+            'rows' => [],
+            'error' => null,
+        ];
+    }
+
+    $headers = array_map(
+        static fn ($value): string => trim((string) $value),
+        array_shift($rawRows)
+    );
+
+    $maxColumns = count($headers);
+    foreach ($rawRows as $row) {
+        $maxColumns = max($maxColumns, count($row));
+    }
+
+    for ($i = count($headers); $i < $maxColumns; $i++) {
+        $headers[] = 'extra_' . ($i + 1);
+    }
+
+    $rows = [];
+    foreach ($rawRows as $row) {
+        $row = array_pad($row, $maxColumns, '');
+        $assoc = [];
+        foreach ($headers as $index => $header) {
+            $assoc[$header] = sgk_csv_decode_value($header, trim((string) ($row[$index] ?? '')));
+        }
+        $rows[] = $assoc;
+    }
+
+    return [
+        'headers' => $headers,
+        'rows' => $rows,
+        'error' => null,
+    ];
+}
+
+function writeSubmissionTable(string $path, array $headers, array $rows): bool
+{
+    $dir = dirname($path);
+    if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    $content = '';
+    $stream = fopen('php://temp', 'w+b');
+    if ($stream === false) {
+        return false;
+    }
+
+    $ok = fputcsv($stream, $headers, ';') !== false;
+    if ($ok) {
+        foreach ($rows as $row) {
+            $orderedRow = [];
+            foreach ($headers as $header) {
+                $orderedRow[] = sgk_csv_encode_value($header, (string) ($row[$header] ?? ''));
+            }
+
+            if (fputcsv($stream, $orderedRow, ';') === false) {
+                $ok = false;
+                break;
+            }
+        }
+    }
+
+    if (!$ok) {
+        fclose($stream);
+        return false;
+    }
+
+    rewind($stream);
+    $content = stream_get_contents($stream);
+    fclose($stream);
+
+    if (!is_string($content)) {
+        return false;
+    }
+
+    $handle = fopen($path, 'c+b');
+    if ($handle === false) {
+        return false;
+    }
+
+    if (!flock($handle, LOCK_EX)) {
+        fclose($handle);
+        return false;
+    }
+
+    if (!ftruncate($handle, 0)) {
+        flock($handle, LOCK_UN);
+        fclose($handle);
+        return false;
+    }
+
+    rewind($handle);
+    $ok = fwrite($handle, $content) !== false;
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+
+    return $ok;
+}
+
+function findSubmissionByEditKey(string $csvPath, string $editKey): ?array
+{
+    if ($editKey === '' || registrationEditSalt() === '') {
+        return null;
+    }
+
+    $table = readSubmissionTable($csvPath);
+    if ($table['error'] !== null) {
+        return null;
+    }
+
+    foreach ($table['rows'] as $index => $row) {
+        $submittedAt = trim((string) ($row['submitted_at'] ?? ''));
+        $email = trim((string) ($row['email'] ?? ''));
+
+        if ($submittedAt === '' || $email === '') {
+            continue;
+        }
+
+        if (hash_equals(buildSubmissionEditKey($submittedAt, $email), $editKey)) {
+            return [
+                'index' => $index,
+                'headers' => $table['headers'],
+                'rows' => $table['rows'],
+                'row' => $row,
+            ];
+        }
+    }
+
+    return null;
+}
+
+function updateSubmissionInCsv(string $csvPath, string $submittedAt, string $email, array $updates): bool
+{
+    $table = readSubmissionTable($csvPath);
+    if ($table['error'] !== null) {
+        return false;
+    }
+
+    foreach ($table['rows'] as $index => $row) {
+        if (
+            trim((string) ($row['submitted_at'] ?? '')) !== $submittedAt
+            || trim((string) ($row['email'] ?? '')) !== $email
+        ) {
+            continue;
+        }
+
+        foreach ($updates as $key => $value) {
+            if (!in_array($key, $table['headers'], true)) {
+                $table['headers'][] = $key;
+            }
+            $row[$key] = trim((string) $value);
+        }
+
+        $table['rows'][$index] = $row;
+        return writeSubmissionTable($csvPath, $table['headers'], $table['rows']);
+    }
+
+    return false;
+}
+
+function saveSubmissionToCsv(string $csvPath, array $row): bool
+{
+    $dir = dirname($csvPath);
+    if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    $isNewFile = !is_file($csvPath) || filesize($csvPath) === 0;
+    $handle = fopen($csvPath, 'ab');
+    if ($handle === false) {
+        return false;
+    }
+
+    if (!flock($handle, LOCK_EX)) {
+        fclose($handle);
+        return false;
+    }
+
+    $headers = array_keys($row);
+    if ($isNewFile && fputcsv($handle, $headers, ';') === false) {
+        flock($handle, LOCK_UN);
+        fclose($handle);
+        return false;
+    }
+
+    $values = [];
+    foreach ($headers as $header) {
+        $values[] = sgk_csv_encode_value($header, (string) ($row[$header] ?? ''));
+    }
+
+    $ok = fputcsv($handle, $values, ';') !== false;
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+
+    return $ok;
 }
 
 function parseImageDataUrl(string $value): ?array
@@ -178,51 +435,58 @@ $success = '';
 $total = 0.0;
 $abstractWordCount = 0;
 $keywordCount = 0;
+$csvPath = __DIR__ . '/.form/submissions.csv';
 $availableRegistrationTypes = array_filter(
     array_keys($registrationPrices),
     static fn (string $option): bool => isRegistrationOptionAvailable($option, $registrationSchedule, $registrationOptionPeriods)
 );
+$registrationSubmissionOpen = isRegistrationSubmissionOpen($registrationSchedule);
 $abstractSubmissionOpen = isWithinScheduleWindow($registrationSchedule['abstract_submission'], $registrationSchedule['today']);
 $photoContestOpen = isWithinScheduleWindow($registrationSchedule['photo_contest'], $registrationSchedule['today']);
+$editKey = trim((string) ($_GET['edit'] ?? $_POST['edit'] ?? ''));
+$isEditMode = false;
+$isEditAllowed = false;
+$editRequiresAbstract = false;
+$editSubjectName = '';
+$editTableMatch = null;
 
-function saveSubmissionToCsv(string $csvPath, array $row): bool
-{
-    $dir = dirname($csvPath);
-    if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
-        return false;
-    }
+if ($editKey !== '') {
+    if (registrationEditSalt() === '') {
+        $errors[] = 'Urejanje prijave trenutno ni na voljo.';
+    } else {
+        $editTableMatch = findSubmissionByEditKey($csvPath, $editKey);
+        if ($editTableMatch === null) {
+            $errors[] = 'Povezava za urejanje ni veljavna ali prijave ni bilo mogoče najti.';
+        } else {
+            $isEditMode = true;
+            foreach ($formData as $key => $value) {
+                if (array_key_exists($key, $editTableMatch['row'])) {
+                    $formData[$key] = trim((string) $editTableMatch['row'][$key]);
+                }
+            }
 
-    $isNewFile = !is_file($csvPath) || filesize($csvPath) === 0;
-    $handle = fopen($csvPath, 'ab');
-    if ($handle === false) {
-        return false;
-    }
-
-    if (!flock($handle, LOCK_EX)) {
-        fclose($handle);
-        return false;
-    }
-
-    $headers = array_keys($row);
-    if ($isNewFile) {
-        if (fputcsv($handle, $headers, ';') === false) {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-            return false;
+            $editRequiresAbstract = in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true);
+            $isEditAllowed = $abstractSubmissionOpen && $editRequiresAbstract;
+            $abstractWordCount = countAbstractWords($formData['abstract_text']);
+            $keywordCount = count(parseKeywords($formData['keywords']));
+            $total = (float) str_replace(',', '.', (string) ($editTableMatch['row']['total_eur'] ?? '0'));
+            $editSubjectName = trim($formData['first_name'] . ' ' . $formData['last_name']);
         }
     }
-
-    $ok = fputcsv($handle, array_values($row), ';') !== false;
-    fflush($handle);
-    flock($handle, LOCK_UN);
-    fclose($handle);
-
-    return $ok;
 }
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
-    foreach ($formData as $key => $value) {
-        $formData[$key] = isset($_POST[$key]) ? trim((string) $_POST[$key]) : '';
+    if ($isEditMode) {
+        $formData['title'] = trim((string) ($_POST['title'] ?? $formData['title']));
+        $formData['authors'] = trim((string) ($_POST['authors'] ?? $formData['authors']));
+        $formData['institutions'] = trim((string) ($_POST['institutions'] ?? $formData['institutions']));
+        $formData['keywords'] = trim((string) ($_POST['keywords'] ?? $formData['keywords']));
+        $formData['abstract_text'] = trim((string) ($_POST['abstract_text'] ?? $formData['abstract_text']));
+        $formData['notes'] = trim((string) ($_POST['notes'] ?? $formData['notes']));
+    } else {
+        foreach ($formData as $key => $value) {
+            $formData[$key] = isset($_POST[$key]) ? trim((string) $_POST[$key]) : '';
+        }
     }
 
     $turnstile = sgk_turnstile_verify($_POST['cf-turnstile-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? null);
@@ -230,37 +494,53 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $errors[] = $turnstile['error'];
     }
 
-    if ($formData['invoice_same'] === '1') {
-        $formData = array_merge($formData, deriveInvoiceFields($formData));
-    }
+    if ($isEditMode) {
+        if ($editTableMatch === null) {
+            $errors[] = 'Prijave za urejanje ni bilo mogoče najti.';
+        }
+        if (!$editRequiresAbstract) {
+            $errors[] = 'Za to prijavo urejanje naslova in povzetka ni na voljo.';
+        }
+        if (!$abstractSubmissionOpen) {
+            $errors[] = 'Rok za urejanje naslova in povzetka je potekel.';
+        }
+    } else {
+        if (!$registrationSubmissionOpen) {
+            $errors[] = 'Registracija je zaključena.';
+        }
 
-    if ($formData['vat_payer'] !== '1') {
-        $formData['vat_id'] = '';
-    }
+        if ($formData['invoice_same'] === '1') {
+            $formData = array_merge($formData, deriveInvoiceFields($formData));
+        }
 
-    if ($formData['first_name'] === '') {
-        $errors[] = 'Vnesite ime.';
-    }
-    if ($formData['last_name'] === '') {
-        $errors[] = 'Vnesite priimek.';
-    }
-    if (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Vnesite veljaven e-mail naslov.';
-    }
-    if (!array_key_exists($formData['registration_type'], $registrationPrices)) {
-        $errors[] = 'Izberite vrsto kotizacije.';
-    } elseif (!in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
-        $errors[] = 'Izbrana vrsta kotizacije trenutno ni na voljo.';
-        $formData['registration_type'] = '';
-    }
-    if ($formData['payment_method'] === '') {
-        $errors[] = 'Izberite način plačila.';
-    }
-    if ($formData['presentation_type'] === '') {
-        $errors[] = 'Izberite obliko predstavitve.';
-    } elseif (!isPresentationSelectionAvailable($formData['presentation_type'], $registrationSchedule)) {
-        $errors[] = 'Oddaja prispevkov trenutno ni odprta.';
-        $formData['presentation_type'] = 'Brez predstavitve';
+        if ($formData['vat_payer'] !== '1') {
+            $formData['vat_id'] = '';
+        }
+
+        if ($formData['first_name'] === '') {
+            $errors[] = 'Vnesite ime.';
+        }
+        if ($formData['last_name'] === '') {
+            $errors[] = 'Vnesite priimek.';
+        }
+        if (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Vnesite veljaven e-mail naslov.';
+        }
+        if (!array_key_exists($formData['registration_type'], $registrationPrices)) {
+            $errors[] = 'Izberite vrsto kotizacije.';
+        } elseif (!in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
+            $errors[] = 'Izbrana vrsta kotizacije trenutno ni na voljo.';
+            $formData['registration_type'] = '';
+        }
+        if ($formData['payment_method'] === '') {
+            $errors[] = 'Izberite način plačila.';
+        }
+        if ($formData['presentation_type'] === '') {
+            $errors[] = 'Izberite obliko predstavitve.';
+        } elseif (!isPresentationSelectionAvailable($formData['presentation_type'], $registrationSchedule)) {
+            $errors[] = 'Oddaja prispevkov trenutno ni odprta.';
+            $formData['presentation_type'] = 'Brez predstavitve';
+        }
     }
 
     $requiresAbstract = in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true);
@@ -272,10 +552,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         if ($formData['title'] === '') {
             $errors[] = 'Vnesite naslov prispevka.';
         }
-        if ($formData['authors'] === '') {
+        if (!$isEditMode && $formData['authors'] === '') {
             $errors[] = 'Vnesite avtorje.';
         }
-        if ($formData['institutions'] === '') {
+        if (!$isEditMode && $formData['institutions'] === '') {
             $errors[] = 'Vnesite institucije.';
         }
         if ($formData['abstract_text'] === '') {
@@ -283,9 +563,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         } elseif ($abstractWordCount > 300) {
             $errors[] = 'Povzetek lahko vsebuje največ 300 besed.';
         }
-        if ($keywordCount === 0) {
+        if (!$isEditMode && $keywordCount === 0) {
             $errors[] = 'Vnesite ključne besede.';
-        } elseif ($keywordCount > 7) {
+        } elseif (!$isEditMode && $keywordCount > 7) {
             $errors[] = 'Vnesete lahko največ 7 ključnih besed.';
         }
     } else {
@@ -299,20 +579,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $abstractWordCount = 0;
     }
 
-    if ($formData['photo_contest'] === '1' && !$photoContestOpen) {
+    if (!$isEditMode && $formData['photo_contest'] === '1' && !$photoContestOpen) {
         $errors[] = 'Prijava na fotografski natečaj trenutno ni odprta.';
         $formData['photo_contest'] = '';
     }
 
-    if (in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
+    if (!$isEditMode && in_array($formData['registration_type'], $availableRegistrationTypes, true)) {
         $total += $registrationPrices[$formData['registration_type']];
     }
 
-    if ($formData['mid_excursion'] === 'kobilarna') {
+    if (!$isEditMode && $formData['mid_excursion'] === 'kobilarna') {
         $total += 16.0;
     }
 
-    if ($formData['post_excursion'] === '1') {
+    if (!$isEditMode && $formData['post_excursion'] === '1') {
         $total += 40.0;
     }
 
@@ -326,15 +606,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $senderName = getenv('SENDER') ?: 'ZRC SAZU';
         $qrImage = null;
         $qrImageCid = null;
+        $submittedAt = $isEditMode
+            ? (string) ($editTableMatch['row']['submitted_at'] ?? '')
+            : date('c');
+        $editUrl = (!$isEditMode && $requiresAbstract && registrationEditSalt() !== '')
+            ? buildSubmissionEditUrl($submittedAt, $formData['email'])
+            : null;
 
-        if ($total > 0) {
+        if (!$isEditMode && $total > 0) {
             $qrImage = parseImageDataUrl($formData['upn_qr_image']);
             if ($qrImage !== null) {
                 $qrImageCid = 'upn_qr_' . md5($formData['email'] . '|' . number_format($total, 2, '.', ''));
             }
         }
 
-        $message = '<p>Nova prijava na 7. SGK.</p>';
+        $message = $isEditMode
+            ? '<p>Posodobitev prijave na 7. SGK.</p>'
+            : '<p>Nova prijava na 7. SGK.</p>';
         $message .= '<table style="border-collapse:collapse;width:100%;">';
         $rows = [
             'Ime' => $formData['first_name'],
@@ -382,8 +670,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $message .= '<p style="margin:0;text-align:center;"><img src="cid:' . e($qrImageCid) . '" alt="UPN QR za plačilo 7. SGK" style="display:inline-block;width:250px;max-width:100%;height:auto;background:#ffffff;"></p>';
         }
 
+        if ($editUrl !== null) {
+            $message .= '<p>Naslov prispevka in povzetek lahko urejate do roka za oddajo povzetkov na povezavi: <a href="' . e($editUrl) . '">' . e($editUrl) . '</a></p>';
+        }
+
         $csvRow = [
-            'submitted_at' => date('c'),
+            'submitted_at' => $submittedAt,
             'first_name' => $formData['first_name'],
             'last_name' => $formData['last_name'],
             'institution' => $formData['institution'],
@@ -421,16 +713,38 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             'total_eur' => number_format($total, 2, '.', ''),
             'upn_qr_included' => $qrImageCid !== null ? '1' : '0',
         ];
-        $csvPath = __DIR__ . '/.form/submissions.csv';
-        $csvSaved = saveSubmissionToCsv($csvPath, $csvRow);
-        if (!$csvSaved) {
-            $errors[] = 'Prijave ni bilo mogoče shraniti. Poskusite znova.';
+        if ($isEditMode && $editTableMatch !== null) {
+            $csvSaved = updateSubmissionInCsv(
+                $csvPath,
+                (string) ($editTableMatch['row']['submitted_at'] ?? ''),
+                (string) ($editTableMatch['row']['email'] ?? ''),
+                [
+                    'title' => $formData['title'],
+                    'authors' => $formData['authors'],
+                    'institutions' => $formData['institutions'],
+                    'keywords' => implode(', ', $keywordList),
+                    'keyword_count' => (string) $keywordCount,
+                    'abstract_text' => $formData['abstract_text'],
+                    'abstract_word_count' => (string) $abstractWordCount,
+                    'notes' => $formData['notes'],
+                ]
+            );
+            if (!$csvSaved) {
+                $errors[] = 'Posodobitve ni bilo mogoče shraniti. Poskusite znova.';
+            }
+        } else {
+            $csvSaved = saveSubmissionToCsv($csvPath, $csvRow);
+            if (!$csvSaved) {
+                $errors[] = 'Prijave ni bilo mogoče shraniti. Poskusite znova.';
+            }
         }
 
         if (empty($errors)) {
-            $subject = '7. SGK prijava - ' . $formData['first_name'] . ' ' . $formData['last_name'];
+            $subject = $isEditMode
+                ? '7. SGK popravek prijave - ' . $editSubjectName
+                : '7. SGK prijava - ' . $formData['first_name'] . ' ' . $formData['last_name'];
             $inlineImages = [];
-            if ($qrImage !== null && $qrImageCid !== null) {
+            if (!$isEditMode && $qrImage !== null && $qrImageCid !== null) {
                 $inlineImages[] = [
                     'cid' => $qrImageCid,
                     'content' => $qrImage['content'],
@@ -450,13 +764,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             );
 
             if ($sent) {
-                $success = 'Prijava je bila uspešno poslana. Predračun prejmete na e-mail naslov.';
+                $success = $isEditMode
+                    ? 'Spremembe so bile uspešno shranjene in poslano je bilo obvestilo po e-mailu.'
+                    : 'Prijava je bila uspešno poslana. Predračun prejmete na e-mail naslov.';
             } else {
                 $errors[] = 'Pošiljanje ni uspelo. Preverite SMTP nastavitve v .env.';
             }
         }
     }
 }
+
+$showAbstractFields = in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true);
+$formLocked = !$registrationSubmissionOpen && !$isEditMode;
+$presentationReadonlyAttr = ($isEditMode && !$isEditAllowed) ? 'readonly' : '';
+$notesReadonlyAttr = ($isEditMode && !$isEditAllowed) ? 'readonly' : '';
+$presentationDisabledAttr = ($isEditMode || !$abstractSubmissionOpen) ? 'disabled' : '';
+$photoContestDisabledAttr = ($isEditMode || !$photoContestOpen) ? 'disabled' : '';
+$showSubmitControls = !$formLocked && (!$isEditMode || $isEditAllowed);
 
 $pageTitle = 'Registracija | 7. Slovenski geološki kongres';
 $activePage = 'registracija';
@@ -498,7 +822,30 @@ require __DIR__ . '/includes/header.php';
         </div>
       <?php endif; ?>
 
+      <?php if ($isEditMode): ?>
+        <article class="panel">
+          <h3>Urejanje obstoječe prijave</h3>
+          <?php if ($isEditAllowed): ?>
+            <p>Spreminjate lahko samo naslov prispevka in povzetek. Ostali podatki so prikazani samo informativno.</p>
+          <?php elseif (!$editRequiresAbstract): ?>
+            <p>Ta prijava nima oddanega prispevka, zato urejanje naslova in povzetka ni na voljo.</p>
+          <?php else: ?>
+            <p>Rok za urejanje naslova prispevka in povzetka je potekel.</p>
+          <?php endif; ?>
+        </article>
+      <?php elseif ($formLocked): ?>
+        <article class="panel">
+          <h3>Registracija je zaključena</h3>
+          <p>Oddaja registracije je bila odprta do 20. julija 2026. Novi vnosi niso več možni.</p>
+        </article>
+      <?php endif; ?>
+
+      <?php if (!$formLocked): ?>
       <form method="post" class="registration-form" id="registration-form">
+      <?php if ($isEditMode): ?>
+        <input type="hidden" name="edit" value="<?= e($editKey) ?>">
+      <?php endif; ?>
+      <fieldset style="border:0;padding:0;margin:0;" <?= $isEditMode ? 'disabled' : '' ?>>
       <h3>Osebni podatki</h3>
       <div class="form-grid">
         <label>Ime*
@@ -583,7 +930,7 @@ require __DIR__ . '/includes/header.php';
 
       <div class="form-grid">
         <label class="inline-check"><input type="checkbox" name="post_excursion" value="1" data-price="40" <?= $formData['post_excursion'] === '1' ? 'checked' : '' ?>> Pokongresna ekskurzija (3. 10. 2026) - 40,00</label>
-        <label class="inline-check"><input type="checkbox" name="photo_contest" value="1" data-price="0" <?= $formData['photo_contest'] === '1' ? 'checked' : '' ?> <?= $photoContestOpen ? '' : 'disabled' ?>> Sodelovanje na fotografskem natečaju (0,00)</label>
+        <label class="inline-check"><input type="checkbox" name="photo_contest" value="1" data-price="0" <?= $formData['photo_contest'] === '1' ? 'checked' : '' ?> <?= $photoContestDisabledAttr ?>> Sodelovanje na fotografskem natečaju (0,00)</label>
       </div>
 
       <h3>Kongresna majica</h3>
@@ -620,37 +967,38 @@ require __DIR__ . '/includes/header.php';
       </label>
 
       <h3>Predstavitev*</h3>
-      <label class="inline-check"><input type="radio" name="presentation_type" value="Predavanje" <?= $formData['presentation_type'] === 'Predavanje' ? 'checked' : '' ?> <?= $abstractSubmissionOpen ? '' : 'disabled' ?> required> Predavanje</label>
-      <label class="inline-check"><input type="radio" name="presentation_type" value="Plakat" <?= $formData['presentation_type'] === 'Plakat' ? 'checked' : '' ?> <?= $abstractSubmissionOpen ? '' : 'disabled' ?>> Plakat</label>
+      <label class="inline-check"><input type="radio" name="presentation_type" value="Predavanje" <?= $formData['presentation_type'] === 'Predavanje' ? 'checked' : '' ?> <?= $presentationDisabledAttr ?> required> Predavanje</label>
+      <label class="inline-check"><input type="radio" name="presentation_type" value="Plakat" <?= $formData['presentation_type'] === 'Plakat' ? 'checked' : '' ?> <?= $presentationDisabledAttr ?>> Plakat</label>
       <label class="inline-check"><input type="radio" name="presentation_type" value="Brez predstavitve" <?= $formData['presentation_type'] === 'Brez predstavitve' ? 'checked' : '' ?>> Brez predstavitve</label>
+      </fieldset>
 
-      <div class="abstract-fields" id="abstract-fields" hidden>
+      <div class="abstract-fields" id="abstract-fields"<?= $showAbstractFields ? '' : ' hidden' ?>>
         <h3>Povzetek prispevka</h3>
         <div class="form-grid">
           <label class="form-span-full">Naslov prispevka*
-            <input type="text" name="title" id="title" value="<?= e($formData['title']) ?>">
+            <input type="text" name="title" id="title" value="<?= e($formData['title']) ?>" <?= $presentationReadonlyAttr ?>>
           </label>
           <label class="form-span-full">Avtorji*
-            <textarea name="authors" id="authors" rows="3"><?= e($formData['authors']) ?></textarea>
+            <textarea name="authors" id="authors" rows="3" <?= $presentationReadonlyAttr ?>><?= e($formData['authors']) ?></textarea>
             <p class="form-note">Vnesite vse avtorje v vrstnem redu, kot naj bodo navedeni v programu in zborniku.</p>
           </label>
           <label class="form-span-full">Institucije*
-            <textarea name="institutions" id="institutions" rows="3"><?= e($formData['institutions']) ?></textarea>
+            <textarea name="institutions" id="institutions" rows="3" <?= $presentationReadonlyAttr ?>><?= e($formData['institutions']) ?></textarea>
           </label>
           <label>Ključne besede*
-            <input type="text" name="keywords" id="keywords" value="<?= e($formData['keywords']) ?>" placeholder="npr. kras, hidrogeologija, sedimentologija">
+            <input type="text" name="keywords" id="keywords" value="<?= e($formData['keywords']) ?>" placeholder="npr. kras, hidrogeologija, sedimentologija" <?= $presentationReadonlyAttr ?>>
             <p class="form-note">Ločite jih z vejicami.</p>
             <p class="form-counter" id="keywords-counter"><?= e((string) $keywordCount) ?> / 7 ključnih besed</p>
           </label>
           <label class="form-span-full">Povzetek*
-            <textarea name="abstract_text" id="abstract_text" rows="10"><?= e($formData['abstract_text']) ?></textarea>
+            <textarea name="abstract_text" id="abstract_text" rows="10" <?= $presentationReadonlyAttr ?>><?= e($formData['abstract_text']) ?></textarea>
             <p class="form-counter" id="abstract-counter"><?= e((string) $abstractWordCount) ?> / 300 besed</p>
           </label>
         </div>
       </div>
 
       <label>Opombe
-        <textarea name="notes" rows="4"><?= e($formData['notes']) ?></textarea>
+        <textarea name="notes" rows="4" <?= $notesReadonlyAttr ?>><?= e($formData['notes']) ?></textarea>
       </label>
 
       <input type="hidden" name="upn_qr_image" id="upn_qr_image" value="<?= e($formData['upn_qr_image']) ?>">
@@ -661,6 +1009,7 @@ require __DIR__ . '/includes/header.php';
           <strong id="total-display"><?= e(number_format($total, 2, ',', '.')) ?> EUR</strong>
       </div>
 
+      <?php if (!$isEditMode): ?>
       <article class="panel payment-qr-panel" id="payment-qr-panel" hidden>
         <div class="payment-qr-copy">
           <h3>UPN QR za plačilo</h3>
@@ -674,15 +1023,19 @@ require __DIR__ . '/includes/header.php';
           <img id="payment-qr-image" alt="UPN QR za plačilo kotizacije 7. SGK" hidden>
         </div>
       </article>
+      <?php endif; ?>
 
-      <?php if ($turnstileConfigured): ?>
+      <?php if ($turnstileConfigured && $showSubmitControls): ?>
         <div class="turnstile-wrap">
           <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>" data-theme="light"></div>
         </div>
       <?php endif; ?>
 
-      <button type="submit" class="btn btn-primary">Pošlji prijavo</button>
+      <?php if ($showSubmitControls): ?>
+        <button type="submit" class="btn btn-primary"><?= $isEditMode ? 'Shrani spremembe' : 'Pošlji prijavo' ?></button>
+      <?php endif; ?>
       </form>
+      <?php endif; ?>
 
       <article class="panel">
         <h3>Podatki za plačilo</h3>
@@ -697,10 +1050,10 @@ require __DIR__ . '/includes/header.php';
     <?php endif; ?>
   </div>
 </section>
-<?php if ($success === ''): ?>
-<?php if ($turnstileConfigured): ?>
+<?php if ($success === '' && $turnstileConfigured && $showSubmitControls): ?>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>
+<?php if ($success === '' && !$isEditMode && !$formLocked): ?>
 <script>
 (function () {
   const form = document.getElementById('registration-form');

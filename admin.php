@@ -63,7 +63,7 @@ function sgk_read_csv_table(string $path): array
         $row = array_pad($row, $maxColumns, '');
         $assoc = [];
         foreach ($headers as $index => $header) {
-            $assoc[$header] = trim((string) ($row[$index] ?? ''));
+            $assoc[$header] = sgk_csv_decode_value($header, trim((string) ($row[$index] ?? '')));
         }
         $rows[] = $assoc;
     }
@@ -302,6 +302,62 @@ function sgk_admin_detail_sections(array $row): array
     return $sections;
 }
 
+function sgk_admin_download_xls(array $table): void
+{
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $spreadsheet->getProperties()
+        ->setCreator('SGK')
+        ->setTitle('Prijave 7. SGK');
+
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Prijave');
+
+    $headers = $table['headers'] ?? [];
+    $rows = $table['rows'] ?? [];
+
+    foreach ($headers as $index => $header) {
+        $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
+        $sheet->setCellValueExplicit(
+            $column . '1',
+            sgk_format_admin_label($header),
+            \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
+        );
+    }
+
+    foreach ($rows as $rowIndex => $row) {
+        foreach ($headers as $columnIndex => $header) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex + 1);
+            $sheet->setCellValueExplicit(
+                $column . ($rowIndex + 2),
+                sgk_admin_preview_value($header, (string) ($row[$header] ?? '')),
+                \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
+            );
+        }
+    }
+
+    if ($headers !== []) {
+        $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+        $lastRow = max(1, count($rows) + 1);
+        $sheet->freezePane('A2');
+        $sheet->setAutoFilter('A1:' . $lastColumn . '1');
+        $sheet->getStyle('A1:' . $lastColumn . '1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:' . $lastColumn . $lastRow)->getAlignment()->setWrapText(true);
+
+        foreach (range(1, count($headers)) as $columnIndex) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+    }
+
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment; filename="registracija.xls"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xls($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
+
 $loginError = '';
 $adminSalt = trim((string) (getenv('SGK_ADMIN_SALT') ?: ''));
 $adminHash = trim((string) (getenv('SGK_ADMIN_HASH') ?: ''));
@@ -343,14 +399,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
 $csvPath = __DIR__ . '/.form/submissions.csv';
 
-if ($isAuthenticated && (($_GET['download'] ?? '') === 'csv')) {
-    if (is_file($csvPath)) {
-        header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="registracija.csv"');
-        header('Content-Length: ' . (string) filesize($csvPath));
-        readfile($csvPath);
-        exit;
-    }
+if ($isAuthenticated && (($_GET['download'] ?? '') === 'xls')) {
+    sgk_admin_download_xls(sgk_read_csv_table($csvPath));
 }
 
 $table = $isAuthenticated
@@ -748,7 +798,7 @@ $rowCount = count($table['rows']);
         <div class="admin-toolbar">
           <span class="admin-stat"><?= e((string) $rowCount) ?> prijav</span>
           <a class="btn btn-secondary" href="/">Nazaj na domačo stran</a>
-          <a class="btn btn-secondary" href="/admin?download=csv">Prenesi CSV</a>
+          <a class="btn btn-secondary" href="/admin?download=xls">Prenesi XLS</a>
           <form method="post" class="admin-inline-form">
             <input type="hidden" name="action" value="logout">
             <button type="submit" class="btn btn-secondary">Odjava</button>

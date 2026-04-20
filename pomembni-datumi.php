@@ -20,7 +20,7 @@ require __DIR__ . '/includes/header.php';
         <tr><td>3. obvestilo</td><td>avgust/september</td><td></td></tr>
         <tr><td>Zgodnja prijava</td><td>16. 3.-29. 5.</td><td></td></tr>
         <tr><td>Oddaja prispevka</td><td>16. 3.-20. 7.</td><td></td></tr>
-        <tr><td>Pozna prijava z oddajo prispevka</td><td>29. 5.-20. 7.</td><td></td></tr>
+        <tr><td>Pozna prijava z oddajo prispevka</td><td>30. 5.-20. 7.</td><td></td></tr>
         <tr><td>Prijava na fotografski natečaj</td><td>16. 3.-1. 9.</td><td></td></tr>
         <tr><td>Obvestilo avtorjem</td><td>julij/avgust</td><td></td></tr>
         <tr>

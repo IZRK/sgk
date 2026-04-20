@@ -43,6 +43,42 @@ function e(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function sgk_csv_multiline_columns(): array
+{
+    return [
+        'authors',
+        'institutions',
+        'abstract_text',
+        'notes',
+    ];
+}
+
+function sgk_csv_encode_value(string $column, ?string $value): string
+{
+    $value = (string) ($value ?? '');
+
+    if (!in_array($column, sgk_csv_multiline_columns(), true)) {
+        return $value;
+    }
+
+    return str_replace(
+        ["\r\n", "\r", "\n"],
+        '\n',
+        $value
+    );
+}
+
+function sgk_csv_decode_value(string $column, ?string $value): string
+{
+    $value = (string) ($value ?? '');
+
+    if (!in_array($column, sgk_csv_multiline_columns(), true)) {
+        return $value;
+    }
+
+    return str_replace('\n', "\n", $value);
+}
+
 function sgk_turnstile_site_key(): string
 {
     return trim((string) (getenv('TURNSTILE_SITE_KEY') ?: ''));
