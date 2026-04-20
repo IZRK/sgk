@@ -12,7 +12,7 @@ class mail
         $fromName = 'Inštitut za raziskovanje krasa',
         $logoImageUrl = 'https://i.imgur.com/Rhe0NrC.png',
         $logoLink = 'https://izrk.github.io/monitoring/',
-        array $inlineImages = [],
+        $inlineImages = [],
         $footerHtml = null
     ) {
         $mail = new PHPMailer();
