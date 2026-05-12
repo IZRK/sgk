@@ -427,6 +427,7 @@ h2 {
 
 .excursion-detail p {
   max-width: none;
+  text-align: justify;
 }
 
 .excursion-detail h4 {
@@ -447,9 +448,10 @@ h2 {
 }
 
 .sponsor-list {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: .75rem;
+  align-items: center;
   margin: .9rem 0 1rem;
 }
 
@@ -478,6 +480,17 @@ h2 {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.sponsor-site-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(13, 90, 114, 0.35);
+}
+
+.sponsor-site-link:hover {
+  border-bottom-color: var(--accent);
 }
 
 /* Circular page */

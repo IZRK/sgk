@@ -11,8 +11,8 @@ $menu = [
     'registracija' => ['label' => 'Registracija', 'href' => '/registracija'],
     'program' => ['label' => 'Program', 'href' => '/program'],
     'ekskurzije' => ['label' => 'Ekskurzije', 'href' => '/ekskurzije'],
-    'prizorisce' => ['label' => 'Prizorišče', 'href' => '/prizorisce'],
     'sponzorji' => ['label' => 'Sponzorji', 'href' => '/sponzorji'],
+    'prizorisce' => ['label' => 'Prizorišče', 'href' => '/prizorisce'],
 ];
 ?>
 <!doctype html>
