@@ -42,6 +42,18 @@ function e($value) {
 	return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function sgk_asset_url($path) {
+	$path = (string)$path;
+	$absolutePath = __DIR__ . '/../' . ltrim(strtok($path, '?'), '/');
+
+	if (!is_file($absolutePath)) {
+		return $path;
+	}
+
+	$separator = str_contains($path, '?') ? '&' : '?';
+	return $path . $separator . 'v=' . filemtime($absolutePath);
+}
+
 function sgk_csv_multiline_columns() {
 	return [
 		'authors',

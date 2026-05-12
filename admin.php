@@ -430,7 +430,7 @@ $rowCount = count($table['rows']);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Geist:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="<?= e(sgk_asset_url('styles.css')) ?>">
 	<?php if ($turnstileConfigured): ?>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	<?php endif; ?>

@@ -9,9 +9,9 @@ require __DIR__ . '/includes/header.php';
     <article class="panel">
       <h3>Podpora dogodku</h3>
       <div class="sponsor-list">
-        <a class="sponsor-card" href="https://www.irgo.si/" target="_blank" rel="noreferrer" aria-label="IRGO">
+        <div class="sponsor-card" aria-label="IRGO">
           <img class="sponsor-logo sponsor-logo-irgo" src="assets/sponsors/irgo-logo.webp" alt="IRGO" loading="lazy" />
-        </a>
+        </div>
         <a class="sponsor-site-link" href="https://www.irgo.si/" target="_blank" rel="noreferrer">www.irgo.si</a>
       </div>
       <p>Za sponzorska vprašanja pišite na <a href="mailto:astrid.svara@zrc-sazu.si">astrid.svara@zrc-sazu.si</a>.</p>

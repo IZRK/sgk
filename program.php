@@ -17,7 +17,7 @@ require __DIR__ . '/includes/header.php';
         <tbody>
           <tr><td>8:00-12:30 in 16:30-18:30</td><td>Registracija udeležencev</td><td>pri recepciji hotela</td></tr>
           <tr><td>9:00-9:10</td><td>Otvoritev kongresa</td><td>glavna dvorana »Capriola«</td></tr>
-          <tr><td>9:10-10:00</td><td>Uvodno predavanje »Geologija Krasa in čezmejni geopark v nastajanju« (Bojan Otoničar, Sara Bensi)</td><td>glavna dvorana »Capriola«</td></tr>
+          <tr><td>9:10-10:00</td><td>Uvodno predavanje »Geologija Krasa in čezmejni geopark v nastajanju« (Bojan Otoničar, Adrijan Košir, Sara Bensi)</td><td>glavna dvorana »Capriola«</td></tr>
           <tr><td>10:00-10:30</td><td>Odmor</td><td>pri mizi za registracijo</td></tr>
           <tr><td>10:30-12:30</td><td>Predavanja</td><td>vzporedni sekciji v dvorani »Capriola« in »Bonavista«</td></tr>
           <tr><td>12:30-14:00</td><td>Kosilo</td><td></td></tr>
