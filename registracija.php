@@ -541,23 +541,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 	$keywordCount = count($keywordList);
 
 	if ($requiresAbstract) {
-		if ($formData['title'] === '') {
-			$errors[] = 'Vnesite naslov prispevka.';
-		}
-		if (!$isEditMode && $formData['authors'] === '') {
-			$errors[] = 'Vnesite avtorje.';
-		}
-		if (!$isEditMode && $formData['institutions'] === '') {
-			$errors[] = 'Vnesite institucije.';
-		}
-		if ($formData['abstract_text'] === '') {
-			$errors[] = 'Vnesite povzetek.';
-		} elseif ($abstractWordCount > 300) {
+		if ($abstractWordCount > 300) {
 			$errors[] = 'Povzetek lahko vsebuje največ 300 besed.';
 		}
-		if (!$isEditMode && $keywordCount === 0) {
-			$errors[] = 'Vnesite ključne besede.';
-		} elseif (!$isEditMode && $keywordCount > 7) {
+		if ($keywordCount > 7) {
 			$errors[] = 'Vnesete lahko največ 7 ključnih besed.';
 		}
 	} else {
@@ -1036,28 +1023,28 @@ require __DIR__ . '/includes/header.php';
                     <div class="abstract-fields" id="abstract-fields"<?= $showAbstractFields ? '': ' hidden' ?>>
                         <h3>Povzetek prispevka</h3>
                         <div class="form-grid">
-                            <label class="form-span-full">Naslov prispevka*
+                            <label class="form-span-full">Naslov prispevka
                                 <input type="text" name="title" id="title"
                                        value="<?= e($formData['title']) ?>" <?= $presentationReadonlyAttr ?>>
                             </label>
-                            <label class="form-span-full">Avtorji*
+                            <label class="form-span-full">Avtorji
                                 <textarea name="authors" id="authors"
                                           rows="3" <?= $presentationReadonlyAttr ?>><?= e($formData['authors']) ?></textarea>
                                 <p class="form-note">Vnesite vse avtorje v vrstnem redu, kot naj bodo navedeni v
                                     programu in zborniku.</p>
                             </label>
-                            <label class="form-span-full">Institucije*
+                            <label class="form-span-full">Institucije
                                 <textarea name="institutions" id="institutions"
                                           rows="3" <?= $presentationReadonlyAttr ?>><?= e($formData['institutions']) ?></textarea>
                             </label>
-                            <label>Ključne besede*
+                            <label>Ključne besede
                                 <input type="text" name="keywords" id="keywords" value="<?= e($formData['keywords']) ?>"
                                        placeholder="npr. kras, hidrogeologija, sedimentologija" <?= $presentationReadonlyAttr ?>>
                                 <p class="form-note">Ločite jih z vejicami.</p>
                                 <p class="form-counter" id="keywords-counter"><?= e((string)$keywordCount) ?> / 7
                                     ključnih besed</p>
                             </label>
-                            <label class="form-span-full">Povzetek*
+                            <label class="form-span-full">Povzetek
                                 <textarea name="abstract_text" id="abstract_text"
                                           rows="10" <?= $presentationReadonlyAttr ?>><?= e($formData['abstract_text']) ?></textarea>
                                 <p class="form-counter" id="abstract-counter"><?= e((string)$abstractWordCount) ?> / 300
@@ -1198,7 +1185,7 @@ require __DIR__ . '/includes/header.php';
                 abstractFieldIds.forEach(function (id) {
                     const field = document.getElementById(id);
                     if (!field) return;
-                    field.required = shouldShow;
+                    field.required = false;
                     if (!shouldShow) {
                         field.value = '';
                     }
