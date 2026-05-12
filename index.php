@@ -25,6 +25,7 @@ $routes = [
     'prizorisce' => 'prizorisce.php',
     'sponzorji' => 'sponzorji.php',
     'circular' => 'circular.php',
+    'drugo-obvestilo' => 'drugo-obvestilo.php',
     'admin' => 'admin.php',
 ];
 
@@ -41,6 +42,7 @@ if ($routes[$slug] !== null) {
 
 $pageTitle = '7. Slovenski geološki kongres';
 $activePage = 'home';
+$secondCircularFiles = glob(__DIR__ . '/assets/7SGK_drugo_obvestilo*.pdf') ?: [];
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
@@ -49,6 +51,11 @@ require __DIR__ . '/includes/header.php';
     <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Prijave se odprejo v ponedeljek, 16. 3. 2026. Lepo vabljeni!</p>
 
     <div class="cta">
+      <?php if ($secondCircularFiles !== []): ?>
+        <a class="btn btn-primary" href="/drugo-obvestilo">2. obvestilo</a>
+      <?php else: ?>
+        <span class="btn btn-primary btn-disabled" aria-disabled="true">2. obvestilo</span>
+      <?php endif; ?>
       <a class="btn btn-primary" href="/circular">1. obvestilo</a>
     </div>
 
@@ -95,19 +102,75 @@ require __DIR__ . '/includes/header.php';
         <h3>Organizator</h3>
         <p>Inštitut za raziskovanje krasa ZRC SAZU<br>Titov trg 2, 6230 Postojna</p>
         <p>Kontaktna oseba: Astrid Švara (<a href="mailto:astrid.svara@zrc-sazu.si">astrid.svara@zrc-sazu.si</a>)</p>
+        <p>Soorganizator: Slovensko geološko društvo</p>
         <img class="partner-logo partner-logo-zrc" src="zrcsazu.svg" alt="ZRC SAZU" loading="lazy" />
       </article>
       <article class="panel">
-        <h3>Soorganizator</h3>
-        <p>Slovensko geološko društvo</p>
-        <img class="partner-logo partner-logo-sgd" src="sgd.png" alt="Slovensko geološko društvo" loading="lazy" />
+        <h3>Donatorji</h3>
+        <div class="donor-logo-grid" aria-label="Donatorji kongresa">
+          <a class="donor-logo-link" href="https://www.slovenskogeoloskodrustvo.si/" target="_blank" rel="noreferrer" aria-label="Slovensko geološko društvo">
+            <img class="donor-logo donor-logo-sgd" src="assets/donors/sgd-logo01-color.png" alt="Slovensko geološko društvo" loading="lazy" />
+          </a>
+          <a class="donor-logo-link" href="https://www.skiah.si/" target="_blank" rel="noreferrer" aria-label="SKIAH">
+            <img class="donor-logo donor-logo-skiah" src="assets/donors/skiah_modri-02d003.png" alt="SKIAH" loading="lazy" />
+          </a>
+        </div>
       </article>
     </div>
 
     <article class="panel panel-spacious">
       <h3>Organizacijski odbor</h3>
       <p>Astrid Švara, Nadja Zupan Hajna, Martin Knez, Bojan Otoničar, Mitja Prelovšek, Franci Gabrovšek, Cyril Mayaud, Uroš Novak, Matej Jelovčan, Tinkara Mazej, Filip Šarc, Metka Petrič, Stanka Šebela, Blaž Kogovšek.</p>
-      <p><strong>Znanstveni odbor:</strong> bo objavljen naknadno.</p>
+    </article>
+
+    <article class="panel panel-spacious">
+      <h3>Znanstveni odbor</h3>
+      <ul class="committee-list">
+        <li>Maja Andrič <strong>(ZRC SAZU)</strong></li>
+        <li>Miloš Bavec <strong>(GEOZS)</strong></li>
+        <li>Mojca Bedjanič <strong>(ZRSVN)</strong></li>
+        <li>Barbara Čenčur Curk <strong>(UL NTF)</strong></li>
+        <li>Irena Debeljak <strong>(ZRC SAZU)</strong></li>
+        <li>Karmen Fifer Bizjak <strong>(ZAG)</strong></li>
+        <li>Marina Gacin <strong>(ARSO)</strong></li>
+        <li>Franci Gabrovšek <strong>(ZRC SAZU)</strong></li>
+        <li>Mojca Gorjup Kavčič <strong>(GEOPARK IDRIJA)</strong></li>
+        <li>Andrej Gosar <strong>(ARSO)</strong></li>
+        <li>Aleksander Horvat <strong>(ZRC SAZU)</strong></li>
+        <li>Brigita Jamnik <strong>(JP VOK SNAGA)</strong></li>
+        <li>Petra Jamšek Rupnik <strong>(GEOZS)</strong></li>
+        <li>Jože Janež <strong>(GEOLOGIJA d.o.o.)</strong></li>
+        <li>Peter Jemec <strong>(ELEA IC)</strong></li>
+        <li>Jernej Jež <strong>(GEOZS)</strong></li>
+        <li>Vojkan Jovičić <strong>(UL FGG)</strong></li>
+        <li>Martin Knez <strong>(ZRC SAZU)</strong></li>
+        <li>Marko Komac <strong>(INTRAW in EFG)</strong></li>
+        <li>Darja Komar <strong>(GEOPARK KARAVANKE)</strong></li>
+        <li>Adrijan Košir <strong>(ZRC SAZU)</strong></li>
+        <li>Matija Križnar <strong>(PMS)</strong></li>
+        <li>Sonja Lojen <strong>(IJS)</strong></li>
+        <li>Andrea Martín Pérez <strong>(ZRC SAZU)</strong></li>
+        <li>David Medica <strong>(PARK ŠKOCJANSKE JAME)</strong></li>
+        <li>Nejc Mihevc <strong>(ELEA IC)</strong></li>
+        <li>Matevž Novak <strong>(GEOZS)</strong></li>
+        <li>Primož Oprčkal <strong>(ZAG)</strong></li>
+        <li>Bojan Otoničar <strong>(ZRC SAZU)</strong></li>
+        <li>Borut Peric <strong>(PARK ŠKOCJANSKE JAME)</strong></li>
+        <li>Metka Petrič <strong>(ZRC SAZU)</strong></li>
+        <li>Jože Ratej <strong>(IRGO)</strong></li>
+        <li>Jasmina Rijavec <strong>(MARMOR SEŽANA)</strong></li>
+        <li>Nina Rman <strong>(GEOZS)</strong></li>
+        <li>Boštjan Rožič <strong>(UL NTF)</strong></li>
+        <li>Martina Stupar <strong>(ZRSVN)</strong></li>
+        <li>Stanka Šebela <strong>(ZRC SAZU)</strong></li>
+        <li>Andrej Šmuc <strong>(UL NTF)</strong></li>
+        <li>Tilen Urbančič <strong>(GEOTOČKA)</strong></li>
+        <li>Goran Vižintin <strong>(UL NTF)</strong></li>
+        <li>Vladimir Vukadin <strong>(IRGO CONSULTING)</strong></li>
+        <li>Nadja Zupan Hajna <strong>(ZRC SAZU)</strong></li>
+        <li>Marko Žibert <strong>(ELEA IC)</strong></li>
+        <li>Petra Žvab Rožič <strong>(UL NTF)</strong></li>
+      </ul>
     </article>
   </div>
 </section>

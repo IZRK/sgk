@@ -8,7 +8,12 @@ require __DIR__ . '/includes/header.php';
     <h2>Sponzorji</h2>
     <article class="panel">
       <h3>Podpora dogodku</h3>
-      <p>Predstavitve sponzorjev in logotipi bodo objavljeni na tej strani.</p>
+      <p>Sponzorje, njihove logotipe, povezave in vsebine bomo dodajali sproti.</p>
+      <div class="sponsor-list">
+        <a class="sponsor-card" href="https://www.irgo.si/" target="_blank" rel="noreferrer" aria-label="IRGO">
+          <img class="sponsor-logo sponsor-logo-irgo" src="assets/sponsors/irgo-logo.webp" alt="IRGO" loading="lazy" />
+        </a>
+      </div>
       <p>Za sponzorska vprašanja pišite na <a href="mailto:astrid.svara@zrc-sazu.si">astrid.svara@zrc-sazu.si</a>.</p>
     </article>
   </div>
