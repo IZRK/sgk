@@ -42,7 +42,8 @@ if ($routes[$slug] !== null) {
 
 $pageTitle = '7. Slovenski geološki kongres';
 $activePage = 'home';
-$secondCircularFiles = glob(__DIR__ . '/assets/7SGK_drugo_obvestilo*.pdf') ?: [];
+$secondCircularHref = '/assets/7SGK_drugo_obvestilo_13.5.2026.pdf';
+$secondCircularPath = __DIR__ . $secondCircularHref;
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
@@ -51,8 +52,8 @@ require __DIR__ . '/includes/header.php';
     <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Prijave se odprejo v ponedeljek, 16. 3. 2026. Lepo vabljeni!</p>
 
     <div class="cta">
-      <?php if ($secondCircularFiles !== []): ?>
-        <a class="btn btn-primary" href="/drugo-obvestilo">2. obvestilo</a>
+      <?php if (is_file($secondCircularPath)): ?>
+        <a class="btn btn-primary" href="<?= e($secondCircularHref) ?>" download>2. obvestilo</a>
       <?php else: ?>
         <span class="btn btn-primary btn-disabled" aria-disabled="true">2. obvestilo</span>
       <?php endif; ?>
