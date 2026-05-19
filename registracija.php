@@ -409,6 +409,7 @@ $formData = [
 	'diet_other'        => '',
 	'presentation_type' => 'Brez predstavitve',
 	'title'             => '',
+	'abstract_later'    => '',
 	'authors'           => '',
 	'institutions'      => '',
 	'keywords'          => '',
@@ -467,6 +468,7 @@ if ($editKey !== '') {
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 	if ($isEditMode) {
 		$formData['title'] = trim((string)($_POST['title'] ?? $formData['title']));
+		$formData['abstract_later'] = isset($_POST['abstract_later']) ? '1': '';
 		$formData['authors'] = trim((string)($_POST['authors'] ?? $formData['authors']));
 		$formData['institutions'] = trim((string)($_POST['institutions'] ?? $formData['institutions']));
 		$formData['keywords'] = trim((string)($_POST['keywords'] ?? $formData['keywords']));
@@ -549,6 +551,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 		}
 	} else {
 		$formData['title'] = '';
+		$formData['abstract_later'] = '';
 		$formData['authors'] = '';
 		$formData['institutions'] = '';
 		$formData['keywords'] = '';
@@ -580,11 +583,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 		$configuredRecipientList = preg_split('/[\s,;|]+/', $configuredRecipients) ?: [];
 		$recipients = array_values(array_unique(array_filter(array_merge([$formData['email']],
 			array_map('trim', $configuredRecipientList)))));
-		$senderName = getenv('SENDER') ?: 'ZRC SAZU';
+		$senderName = 'IZRK (7. SGK)';
+		$senderEmail = 'astrid.svara@zrc-sazu.si';
 		$qrImage = null;
 		$qrImageCid = null;
 		$submittedAt = $isEditMode ? (string)($editTableMatch['row']['submitted_at'] ?? ''): date('c');
-		$editUrl = (!$isEditMode && $requiresAbstract && registrationEditSalt() !== '') ?
+		$editUrl = (!$isEditMode && in_array($formData['presentation_type'], ['Predavanje', 'Plakat'], true) && registrationEditSalt() !== '') ?
 			buildSubmissionEditUrl($submittedAt, $formData['email']): null;
 
 		if (!$isEditMode && $total > 0) {
@@ -621,6 +625,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
 		if ($requiresAbstract) {
 			$rows['Naslov prispevka'] = $formData['title'];
+			$rows['Povzetek bo oddan kasneje'] = $formData['abstract_later'] === '1' ? 'Da': 'Ne';
 			$rows['Avtorji'] = $formData['authors'];
 			$rows['Institucije'] = $formData['institutions'];
 			$rows['Ključne besede'] = implode(', ', $keywordList);
@@ -677,6 +682,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 			'diet_other'          => $formData['diet_other'],
 			'presentation_type'   => $formData['presentation_type'],
 			'title'               => $formData['title'],
+			'abstract_later'      => $formData['abstract_later'] === '1' ? '1': '0',
 			'authors'             => $formData['authors'],
 			'institutions'        => $formData['institutions'],
 			'keywords'            => implode(', ', $keywordList),
@@ -691,6 +697,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 			$csvSaved = updateSubmissionInCsv($csvPath, (string)($editTableMatch['row']['submitted_at'] ?? ''),
 				(string)($editTableMatch['row']['email'] ?? ''), [
 					'title'               => $formData['title'],
+					'abstract_later'      => $formData['abstract_later'] === '1' ? '1': '0',
 					'authors'             => $formData['authors'],
 					'institutions'        => $formData['institutions'],
 					'keywords'            => implode(', ', $keywordList),
@@ -723,7 +730,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 			}
 
 			$sent = mail::send($recipients, $subject, $message, $senderName, 'https://i.imgur.com/Rhe0NrC.png',
-				'https://izrk.github.io/monitoring/', $inlineImages);
+				'https://sgk.zrc-sazu.si/', $inlineImages, null, $senderEmail, $senderEmail);
 
 			if ($sent) {
 				$success = $isEditMode ? 'Spremembe so bile uspešno shranjene in poslano je bilo obvestilo po e-mailu.':
@@ -793,14 +800,14 @@ require __DIR__ . '/includes/header.php';
                                                     target="_blank" rel="noreferrer">povezava</a></td>
                     </tr>
                     <tr>
-                        <td>Študentska/upokojenska** zgodnja</td>
+                        <td>Študentska**/upokojenska*** zgodnja</td>
                         <td>200,00</td>
-                        <td>** z ustreznim dokazilom</td>
+                        <td>** redni študentje 1. in 2. stopnje<br>*** z ustreznim dokazilom</td>
                     </tr>
                     <tr>
-                        <td>Študentska/upokojenska** pozna</td>
+                        <td>Študentska**/upokojenska*** pozna</td>
                         <td>250,00</td>
-                        <td>** z ustreznim dokazilom</td>
+                        <td></td>
                     </tr>
                     </tbody>
                 </table>
@@ -1022,6 +1029,9 @@ require __DIR__ . '/includes/header.php';
 
                     <div class="abstract-fields" id="abstract-fields"<?= $showAbstractFields ? '': ' hidden' ?>>
                         <h3>Povzetek prispevka</h3>
+                        <label class="inline-check"><input type="checkbox" name="abstract_later"
+                                                           value="1" <?= $formData['abstract_later'] === '1' ? 'checked':
+								'' ?> <?= $presentationReadonlyAttr ?>> Povzetek prispevka bo oddan kasneje, do 20. 7. 2026</label>
                         <div class="form-grid">
                             <label class="form-span-full">Naslov prispevka
                                 <input type="text" name="title" id="title"

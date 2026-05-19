@@ -11,9 +11,11 @@ class mail
         $message = 'No message provided',
         $fromName = 'Inštitut za raziskovanje krasa',
         $logoImageUrl = 'https://i.imgur.com/Rhe0NrC.png',
-        $logoLink = 'https://izrk.github.io/monitoring/',
+        $logoLink = 'https://sgk.zrc-sazu.si/',
         $inlineImages = [],
-        $footerHtml = null
+        $footerHtml = null,
+        $fromEmail = 'izrk.monitoring@zrc-sazu.si',
+        $replyToEmail = null
     ) {
         $mail = new PHPMailer();
         $mail->isSMTP();
@@ -26,7 +28,11 @@ class mail
         $mail->CharSet = 'UTF-8';
         $mail->Port = intval(getenv('SMTPPORT') ?: '25');
 
-        $mail->setFrom('izrk.monitoring@zrc-sazu.si', $fromName);
+        $mail->setFrom($fromEmail, $fromName);
+        $replyToEmail = $replyToEmail ?? $fromEmail;
+        if (trim((string) $replyToEmail) !== '') {
+            $mail->addReplyTo($replyToEmail, $fromName);
+        }
         foreach ((array) $to as $recipient) {
             $recipient = trim((string) $recipient);
             if ($recipient === '') {
@@ -49,7 +55,7 @@ class mail
                 $logoCid = 'mainlogo_' . md5($logoImageUrl);
                 $mail->addStringEmbeddedImage($logoData, $logoCid, 'logo.png', 'base64', 'image/png');
                 $html = str_replace('src="https://i.imgur.com/Rhe0NrC.png"', 'src="cid:' . $logoCid . '"', $html);
-                $html = str_replace('href="https://izrk.github.io/monitoring/"', 'href="' . htmlspecialchars($logoLink, ENT_QUOTES, 'UTF-8') . '"', $html);
+                $html = str_replace('href="https://sgk.zrc-sazu.si/"', 'href="' . htmlspecialchars($logoLink, ENT_QUOTES, 'UTF-8') . '"', $html);
             }
         }
 
