@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/includes/bootstrap.php';
+
+$registrationSchedule = sgk_registration_schedule();
 $pageTitle = 'Pomembni datumi | 7. Slovenski geološki kongres';
 $activePage = 'pomembni-datumi';
 require __DIR__ . '/includes/header.php';
@@ -18,9 +21,9 @@ require __DIR__ . '/includes/header.php';
         <tr><td>1. obvestilo</td><td>20. 2.</td><td></td></tr>
         <tr><td>2. obvestilo</td><td>april/maj</td><td></td></tr>
         <tr><td>3. obvestilo</td><td>avgust/september</td><td></td></tr>
-        <tr><td>Zgodnja prijava</td><td>16. 3.-29. 5.</td><td>možna zgodnja prijava s kasnejšo oddajo prispevka</td></tr>
+        <tr><td>Zgodnja prijava</td><td><?= e(sgk_format_short_date_range($registrationSchedule['registration_early']['start'], $registrationSchedule['registration_early']['end'])) ?></td><td>možna zgodnja prijava s kasnejšo oddajo prispevka</td></tr>
         <tr><td>Oddaja prispevka</td><td>16. 3.-20. 7.</td><td></td></tr>
-        <tr><td>Pozna prijava z oddajo prispevka</td><td>30. 5.-20. 7.</td><td></td></tr>
+        <tr><td>Pozna prijava z oddajo prispevka</td><td><?= e(sgk_format_short_date_range($registrationSchedule['registration_late']['start'], $registrationSchedule['registration_late']['end'])) ?></td><td></td></tr>
         <tr><td>Prijava na fotografski natečaj</td><td>16. 3.-1. 9.</td><td></td></tr>
         <tr><td>Obvestilo avtorjem</td><td>julij/avgust</td><td></td></tr>
         <tr>

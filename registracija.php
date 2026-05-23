@@ -5,29 +5,7 @@ require_once __DIR__ . '/includes/mail.php';
 $turnstileConfigured = sgk_turnstile_is_configured();
 $turnstileSiteKey = sgk_turnstile_site_key();
 
-$registrationSchedule = [
-	'today'                   => date('Y-m-d'),
-	'registration_submission' => [
-		'start' => '2026-03-16',
-		'end'   => '2026-07-20'
-	],
-	'registration_early'      => [
-		'start' => '2026-03-16',
-		'end'   => '2026-05-29'
-	],
-	'registration_late'       => [
-		'start' => '2026-05-30',
-		'end'   => '2026-07-20'
-	],
-	'abstract_submission'     => [
-		'start' => '2026-03-16',
-		'end'   => '2026-07-20'
-	],
-	'photo_contest'           => [
-		'start' => '2026-03-16',
-		'end'   => '2026-09-01'
-	],
-];
+$registrationSchedule = sgk_registration_schedule();
 
 $registrationPrices = [
 	'redna-zgodnja'      => 350.00,
@@ -807,7 +785,7 @@ require __DIR__ . '/includes/header.php';
                     <tr>
                         <td>Študentska**/upokojenska*** pozna</td>
                         <td>250,00</td>
-                        <td></td>
+                        <td>** redni študentje 1. in 2. stopnje<br>*** z ustreznim dokazilom</td>
                     </tr>
                     </tbody>
                 </table>

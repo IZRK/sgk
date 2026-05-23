@@ -42,6 +42,63 @@ function e($value) {
 	return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function sgk_registration_schedule($today = null) {
+	if ($today instanceof DateTimeInterface) {
+		$today = DateTimeImmutable::createFromInterface($today)
+			->setTimezone(new DateTimeZone('Europe/Ljubljana'))
+			->format('Y-m-d');
+	} elseif ($today === null) {
+		$today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Ljubljana')))->format('Y-m-d');
+	} else {
+		$today = substr((string)$today, 0, 10);
+	}
+
+	$schedule = [
+		'today'                   => $today,
+		'registration_submission' => [
+			'start' => '2026-03-16',
+			'end'   => '2026-07-20'
+		],
+		'registration_early'      => [
+			'start' => '2026-03-16',
+			'end'   => '2026-05-29'
+		],
+		'registration_late'       => [
+			'start' => '2026-05-30',
+			'end'   => '2026-07-20'
+		],
+		'abstract_submission'     => [
+			'start' => '2026-03-16',
+			'end'   => '2026-07-20'
+		],
+		'photo_contest'           => [
+			'start' => '2026-03-16',
+			'end'   => '2026-09-01'
+		],
+	];
+
+	if ($today >= '2026-05-29') {
+		$schedule['registration_early']['end'] = '2026-06-05';
+		$schedule['registration_late']['start'] = '2026-06-06';
+	}
+
+	return $schedule;
+}
+
+function sgk_format_short_date($date) {
+	$timestamp = strtotime($date . ' 00:00:00');
+
+	if ($timestamp === false) {
+		return $date;
+	}
+
+	return date('j. n.', $timestamp);
+}
+
+function sgk_format_short_date_range($start, $end) {
+	return sgk_format_short_date($start) . '-' . sgk_format_short_date($end);
+}
+
 function sgk_asset_url($path) {
 	$path = (string)$path;
 	$absolutePath = __DIR__ . '/../' . ltrim(strtok($path, '?'), '/');
