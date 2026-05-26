@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 
 const SGK_ADMIN_SESSION_KEY = 'sgk_admin_authenticated';
+const SGK_ADMIN_FLASH_KEY = 'sgk_admin_flash';
 
 function sgk_admin_hash_password($salt, $password) {
 	return hash('sha512', $salt . $password);
@@ -70,6 +71,134 @@ function sgk_read_csv_table($path) {
 	];
 }
 
+function sgk_admin_write_csv_table($path, $headers, $rows) {
+	$dir = dirname($path);
+	if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+		return false;
+	}
+
+	$stream = fopen('php://temp', 'w+b');
+	if ($stream === false) {
+		return false;
+	}
+
+	$ok = fputcsv($stream, $headers, ';') !== false;
+	if ($ok) {
+		foreach ($rows as $row) {
+			$orderedRow = [];
+			foreach ($headers as $header) {
+				$orderedRow[] = sgk_csv_encode_value($header, (string)($row[$header] ?? ''));
+			}
+
+			if (fputcsv($stream, $orderedRow, ';') === false) {
+				$ok = false;
+				break;
+			}
+		}
+	}
+
+	if (!$ok) {
+		fclose($stream);
+		return false;
+	}
+
+	rewind($stream);
+	$content = stream_get_contents($stream);
+	fclose($stream);
+
+	if (!is_string($content)) {
+		return false;
+	}
+
+	$handle = fopen($path, 'c+b');
+	if ($handle === false) {
+		return false;
+	}
+
+	if (!flock($handle, LOCK_EX)) {
+		fclose($handle);
+		return false;
+	}
+
+	if (!ftruncate($handle, 0)) {
+		flock($handle, LOCK_UN);
+		fclose($handle);
+		return false;
+	}
+
+	rewind($handle);
+	$ok = fwrite($handle, $content) !== false;
+	fflush($handle);
+	flock($handle, LOCK_UN);
+	fclose($handle);
+
+	return $ok;
+}
+
+function sgk_admin_find_row_index($table, $requestedIndex, $originalSubmittedAt, $originalEmail) {
+	$rows = $table['rows'] ?? [];
+	$requestedIndex = filter_var($requestedIndex, FILTER_VALIDATE_INT);
+	$originalSubmittedAt = trim((string)$originalSubmittedAt);
+	$originalEmail = trim((string)$originalEmail);
+	$hasFingerprint = $originalSubmittedAt !== '' || $originalEmail !== '';
+
+	if ($requestedIndex !== false && isset($rows[$requestedIndex])) {
+		$row = $rows[$requestedIndex];
+		if (!$hasFingerprint ||
+			(trim((string)($row['submitted_at'] ?? '')) === $originalSubmittedAt &&
+				trim((string)($row['email'] ?? '')) === $originalEmail)) {
+			return $requestedIndex;
+		}
+	}
+
+	if ($hasFingerprint) {
+		foreach ($rows as $index => $row) {
+			if (trim((string)($row['submitted_at'] ?? '')) === $originalSubmittedAt &&
+				trim((string)($row['email'] ?? '')) === $originalEmail) {
+				return $index;
+			}
+		}
+	}
+
+	return null;
+}
+
+function sgk_admin_set_flash($type, $message) {
+	$_SESSION[SGK_ADMIN_FLASH_KEY] = [
+		'type'    => $type,
+		'message' => $message,
+	];
+}
+
+function sgk_admin_sort_query($source) {
+	$allowedSorts = [
+		'sequence',
+		'submitted_at',
+		'name',
+		'institution',
+		'payment_method',
+		'contact',
+		'presentation_type',
+	];
+	$sort = trim((string)($source['sort'] ?? ''));
+	$dir = trim((string)($source['dir'] ?? ''));
+
+	if (!in_array($sort, $allowedSorts, true)) {
+		return '';
+	}
+
+	$dir = $dir === 'desc' ? 'desc': 'asc';
+	return '?' . http_build_query([
+			'sort' => $sort,
+			'dir'  => $dir,
+		]);
+}
+
+function sgk_admin_redirect($query = '') {
+	header('Location: /admin' . $query);
+	exit;
+}
+
 function sgk_format_admin_label($column) {
 	$labels = [
 		'submitted_at'        => 'Oddano',
@@ -103,6 +232,7 @@ function sgk_format_admin_label($column) {
 		'notes'               => 'Opombe',
 		'total_eur'           => 'Skupaj EUR',
 		'upn_qr_included'     => 'UPN QR',
+		'abstract_later'      => 'Povzetek kasneje',
 		'contact_name'        => 'Kontaktna oseba',
 		'title'               => 'Naslov prispevka',
 		'authors'             => 'Avtorji',
@@ -114,6 +244,66 @@ function sgk_format_admin_label($column) {
 	];
 
 	return $labels[$column] ?? ucwords(str_replace('_', ' ', $column));
+}
+
+function sgk_admin_editable_columns() {
+	return [
+		'first_name',
+		'last_name',
+		'institution',
+		'address',
+		'invoice_same',
+		'invoice_name',
+		'invoice_address',
+		'invoice_post',
+		'invoice_country',
+		'vat_payer',
+		'vat_id',
+		'email',
+		'phone',
+		'registration_type',
+		'mid_excursion',
+		'post_excursion',
+		'photo_contest',
+		'payment_method',
+		'shirt_gender',
+		'shirt_size',
+		'diet_vegetarian',
+		'diet_lactose',
+		'diet_gluten',
+		'diet_none',
+		'diet_other',
+		'presentation_type',
+		'title',
+		'abstract_later',
+		'authors',
+		'institutions',
+		'keywords',
+		'abstract_text',
+		'notes',
+	];
+}
+
+function sgk_admin_zero_as_empty_column($column) {
+	return in_array($column, [
+		'title',
+		'authors',
+		'institutions',
+		'keywords',
+		'keyword_count',
+		'abstract_text',
+		'abstract_word_count',
+		'notes',
+	], true);
+}
+
+function sgk_admin_clean_field_value($column, $value) {
+	$value = trim((string)$value);
+	if ($value === '0' && sgk_admin_zero_as_empty_column($column)) {
+		return '';
+	}
+
+	return $value;
 }
 
 function sgk_admin_is_boolean_column($column) {
@@ -200,7 +390,7 @@ function sgk_admin_summary_value($row, $key) {
 }
 
 function sgk_admin_preview_value($column, $value) {
-	$value = trim($value);
+	$value = sgk_admin_clean_field_value($column, $value);
 	if ($value === '') {
 		return '';
 	}
@@ -219,6 +409,76 @@ function sgk_admin_preview_value($column, $value) {
 	}
 
 	return $value;
+}
+
+function sgk_admin_edit_fields($headers, $row) {
+	$fields = [];
+	$editableColumns = array_values(array_intersect(sgk_admin_editable_columns(), $headers));
+	$selectOptions = [
+		'registration_type' => [
+			''                   => 'Izberite',
+			'redna-zgodnja'      => 'Redna zgodnja (350,00)',
+			'redna-pozna'        => 'Redna pozna (450,00)',
+			'redna-zgodnja-sgd'  => 'Redna zgodnja za člane SGD (300,00)',
+			'redna-pozna-sgd'    => 'Redna pozna za člane SGD (400,00)',
+			'studentska-zgodnja' => 'Študentska/upokojenska zgodnja (200,00)',
+			'studentska-pozna'   => 'Študentska/upokojenska pozna (250,00)',
+		],
+		'payment_method'    => [
+			''                                     => 'Izberite',
+			'bančno nakazilo'                      => 'Bančno nakazilo',
+			'naročilnica - plačilo po računu'      => 'Naročilnica - plačilo po računu',
+			'drugo'                                => 'Drugo',
+		],
+		'mid_excursion'     => [
+			'none'      => 'Brez izbire (0,00)',
+			'kobilarna' => 'Ogled kobilarne Lipica (16,00)',
+			'kamnolom'  => 'Ogled kamnoloma Lipica (0,00)',
+		],
+		'shirt_gender'      => [
+			''       => 'Izberite',
+			'Ženska' => 'Ženska',
+			'Moška'  => 'Moška',
+		],
+		'shirt_size'        => [
+			''    => 'Izberite',
+			'XS'  => 'XS',
+			'S'   => 'S',
+			'M'   => 'M',
+			'L'   => 'L',
+			'XL'  => 'XL',
+			'XXL' => 'XXL',
+		],
+		'presentation_type' => [
+			'Predavanje'          => 'Predavanje',
+			'Plakat'              => 'Plakat',
+			'Brez predstavitve'   => 'Brez predstavitve',
+		],
+	];
+
+	foreach ($editableColumns as $header) {
+		$value = sgk_admin_clean_field_value($header, (string)($row[$header] ?? ''));
+		$type = 'text';
+		if (sgk_admin_is_boolean_column($header) || $header === 'abstract_later') {
+			$type = 'checkbox';
+		} elseif (array_key_exists($header, $selectOptions)) {
+			$type = 'select';
+		} elseif (in_array($header, sgk_csv_multiline_columns(), true) ||
+			str_contains($value, "\n") ||
+			strlen($value) > 90) {
+			$type = 'textarea';
+		}
+
+		$fields[] = [
+			'name'    => $header,
+			'label'   => sgk_format_admin_label($header),
+			'value'   => $value,
+			'type'    => $type,
+			'options' => $selectOptions[$header] ?? [],
+		];
+	}
+
+	return $fields;
 }
 
 function sgk_admin_detail_sections($row) {
@@ -373,6 +633,16 @@ $authConfigured = $adminSalt !== '' && $adminHash !== '';
 $turnstileConfigured = sgk_turnstile_is_configured();
 $turnstileSiteKey = sgk_turnstile_site_key();
 $isAuthenticated = !empty($_SESSION[SGK_ADMIN_SESSION_KEY]);
+$adminMessage = '';
+$adminMessageType = 'info';
+$csvPath = __DIR__ . '/.form/submissions.csv';
+$adminSortQuery = sgk_admin_sort_query($_GET);
+
+if (!empty($_SESSION[SGK_ADMIN_FLASH_KEY]) && is_array($_SESSION[SGK_ADMIN_FLASH_KEY])) {
+	$adminMessage = trim((string)($_SESSION[SGK_ADMIN_FLASH_KEY]['message'] ?? ''));
+	$adminMessageType = (string)($_SESSION[SGK_ADMIN_FLASH_KEY]['type'] ?? 'info') === 'error' ? 'error': 'success';
+	unset($_SESSION[SGK_ADMIN_FLASH_KEY]);
+}
 
 if (!$authConfigured) {
 	unset($_SESSION[SGK_ADMIN_SESSION_KEY]);
@@ -381,10 +651,60 @@ if (!$authConfigured) {
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 	$action = trim((string)($_POST['action'] ?? 'login'));
+	$postSortQuery = sgk_admin_sort_query($_POST);
 
 	if ($action === 'logout') {
 		unset($_SESSION[SGK_ADMIN_SESSION_KEY]);
 		$isAuthenticated = false;
+	} elseif (in_array($action, ['admin_update', 'admin_delete'], true)) {
+		if (!$isAuthenticated) {
+			$loginError = 'Seja je potekla. Prijavite se znova.';
+		} else {
+			$editTable = sgk_read_csv_table($csvPath);
+			if ($editTable['error'] !== null) {
+				$adminMessage = $editTable['error'];
+				$adminMessageType = 'error';
+			} else {
+				$rowIndex = sgk_admin_find_row_index($editTable, $_POST['row_index'] ?? null,
+					$_POST['original_submitted_at'] ?? '', $_POST['original_email'] ?? '');
+
+				if ($rowIndex === null) {
+					$adminMessage = 'Izbranega vnosa ni bilo mogoče najti.';
+					$adminMessageType = 'error';
+				} elseif ($action === 'admin_delete') {
+					array_splice($editTable['rows'], $rowIndex, 1);
+					if (sgk_admin_write_csv_table($csvPath, $editTable['headers'], $editTable['rows'])) {
+						sgk_admin_set_flash('success', 'Vnos je bil izbrisan.');
+						sgk_admin_redirect($postSortQuery);
+					}
+
+					$adminMessage = 'Vnosa ni bilo mogoče izbrisati.';
+					$adminMessageType = 'error';
+				} else {
+					$fields = $_POST['fields'] ?? [];
+					$fields = is_array($fields) ? $fields: [];
+					$row = $editTable['rows'][$rowIndex];
+					$editableHeaders = array_values(array_intersect(sgk_admin_editable_columns(), $editTable['headers']));
+
+					foreach ($editableHeaders as $header) {
+						if (sgk_admin_is_boolean_column($header) || $header === 'abstract_later') {
+							$row[$header] = isset($fields[$header]) ? '1': '0';
+						} else {
+							$row[$header] = trim((string)($fields[$header] ?? ''));
+						}
+					}
+
+					$editTable['rows'][$rowIndex] = $row;
+					if (sgk_admin_write_csv_table($csvPath, $editTable['headers'], $editTable['rows'])) {
+						sgk_admin_set_flash('success', 'Vnos je bil posodobljen.');
+						sgk_admin_redirect($postSortQuery);
+					}
+
+					$adminMessage = 'Sprememb ni bilo mogoče shraniti.';
+					$adminMessageType = 'error';
+				}
+			}
+		}
 	} else {
 		$password = (string)($_POST['password'] ?? '');
 		if (!$authConfigured) {
@@ -404,8 +724,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 		}
 	}
 }
-
-$csvPath = __DIR__ . '/.form/submissions.csv';
 
 if ($isAuthenticated && (($_GET['download'] ?? '') === 'xls')) {
 	sgk_admin_download_xls(sgk_read_csv_table($csvPath));
@@ -436,22 +754,30 @@ $rowCount = count($table['rows']);
 	<?php endif; ?>
     <style>
         body.admin-page {
+            height: 100vh;
             min-height: 100vh;
+            overflow: hidden;
             background: radial-gradient(circle at top left, rgba(13, 90, 114, 0.13), transparent 30%),
             radial-gradient(circle at top right, rgba(183, 205, 190, 0.28), transparent 24%),
             #eef2ef;
         }
 
         .admin-shell {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
             width: 100%;
+            height: 100dvh;
             margin: 0 auto;
             padding: 12px 0 18px;
+            overflow: hidden;
         }
 
         .admin-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex: 0 0 auto;
             gap: 0.75rem;
             margin-bottom: 0.45rem;
             padding: 0 16px;
@@ -531,6 +857,8 @@ $rowCount = count($table['rows']);
         }
 
         .admin-table-card {
+            flex: 1 1 auto;
+            min-height: 0;
             overflow: hidden;
             padding: 0;
             border-radius: 0;
@@ -542,14 +870,15 @@ $rowCount = count($table['rows']);
 
         .admin-split {
             display: grid;
-            grid-template-columns: minmax(640px, 1fr) minmax(260px, 320px);
-            min-height: calc(100vh - 150px);
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+            height: 100%;
+            min-height: 0;
         }
 
         .admin-table-wrap {
             overflow: auto;
             margin: 0;
-            max-height: calc(100vh - 150px);
+            min-height: 0;
             border-right: 1px solid rgba(17, 33, 40, 0.08);
         }
 
@@ -557,7 +886,7 @@ $rowCount = count($table['rows']);
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            min-width: 100%;
+            min-width: 880px;
             font-size: 0.93rem;
             margin: 0;
         }
@@ -571,6 +900,7 @@ $rowCount = count($table['rows']);
         }
 
         .admin-table th {
+            padding: 0;
             position: sticky;
             top: 0;
             z-index: 1;
@@ -579,6 +909,46 @@ $rowCount = count($table['rows']);
             font-size: 0.76rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .admin-sort-button {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.45rem;
+            width: 100%;
+            min-height: 44px;
+            padding: 0.78rem 0.8rem;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+            letter-spacing: inherit;
+            line-height: 1.1;
+            text-align: left;
+            text-transform: inherit;
+        }
+
+        .admin-sort-arrow {
+            min-width: 0.8rem;
+            color: #0d5a72;
+            font-size: 0.82rem;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .admin-table th[aria-sort="none"] .admin-sort-arrow {
+            color: #6f858e;
+            opacity: 0.64;
+        }
+
+        .admin-sequence-heading,
+        .admin-sequence-cell {
+            width: 1%;
+            text-align: right;
             white-space: nowrap;
         }
 
@@ -653,6 +1023,17 @@ $rowCount = count($table['rows']);
             color: #204a58;
         }
 
+        .admin-alert.success {
+            background: #eef8f1;
+            border-color: #b9ddc5;
+            color: #1d5731;
+        }
+
+        .admin-shell > .admin-alert {
+            flex: 0 0 auto;
+            margin: 0 16px 0.6rem;
+        }
+
         .admin-empty {
             padding: 1.4rem 1.2rem;
             color: #43606a;
@@ -661,6 +1042,7 @@ $rowCount = count($table['rows']);
         .admin-preview {
             padding: 0.75rem 0.8rem 0.9rem;
             overflow: auto;
+            min-height: 0;
             background: radial-gradient(circle at top right, rgba(13, 90, 114, 0.06), transparent 28%),
             rgba(255, 253, 248, 0.92);
         }
@@ -691,6 +1073,36 @@ $rowCount = count($table['rows']);
             margin: 0.2rem 0 0;
             color: #4a6169;
             font-size: 0.82rem;
+        }
+
+        .admin-preview-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 0.6rem;
+        }
+
+        .admin-action-button {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0.42rem 0.72rem;
+            border: 1px solid rgba(13, 90, 114, 0.22);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #123b49;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .admin-action-button.danger {
+            border-color: rgba(143, 46, 46, 0.25);
+            color: #842828;
         }
 
         .admin-preview-section {
@@ -745,6 +1157,110 @@ $rowCount = count($table['rows']);
             overflow-wrap: anywhere;
         }
 
+        .admin-dialog {
+            width: min(780px, calc(100vw - 24px));
+            max-height: calc(100dvh - 32px);
+            padding: 0;
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 24px 70px rgba(10, 31, 38, 0.26);
+            color: #13272f;
+        }
+
+        .admin-dialog::backdrop {
+            background: rgba(10, 31, 38, 0.42);
+        }
+
+        .admin-dialog form {
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100dvh - 32px);
+        }
+
+        .admin-dialog-header,
+        .admin-dialog-footer {
+            flex: 0 0 auto;
+            padding: 0.9rem 1rem;
+        }
+
+        .admin-dialog-header {
+            border-bottom: 1px solid rgba(17, 33, 40, 0.08);
+        }
+
+        .admin-dialog-title {
+            margin: 0;
+            font-size: 1.05rem;
+            line-height: 1.15;
+        }
+
+        .admin-dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.6rem;
+            border-top: 1px solid rgba(17, 33, 40, 0.08);
+        }
+
+        .admin-edit-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            min-height: 0;
+            padding: 1rem;
+            overflow: auto;
+        }
+
+        .admin-edit-field {
+            display: grid;
+            gap: 0.28rem;
+        }
+
+        .admin-edit-field.is-checkbox {
+            align-content: end;
+        }
+
+        .admin-edit-field span {
+            color: #45606a;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .admin-edit-field input,
+        .admin-edit-field select,
+        .admin-edit-field textarea {
+            width: 100%;
+            border: 1px solid #cfd9de;
+            border-radius: 8px;
+            padding: 0.62rem 0.68rem;
+            font: inherit;
+            font-size: 0.9rem;
+        }
+
+        .admin-edit-check {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 43px;
+            padding: 0.62rem 0.68rem;
+            border: 1px solid #cfd9de;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 0.9rem;
+        }
+
+        .admin-edit-check input {
+            width: auto;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-edit-field textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
         @media (max-width: 760px) {
             .admin-shell {
                 padding-top: 14px;
@@ -757,17 +1273,21 @@ $rowCount = count($table['rows']);
 
             .admin-split {
                 grid-template-columns: 1fr;
+                grid-template-rows: minmax(0, 48%) minmax(0, 52%);
             }
 
             .admin-table-wrap {
                 border-right: 0;
                 border-bottom: 1px solid rgba(17, 33, 40, 0.08);
-                max-height: 48vh;
             }
 
             .admin-preview-row {
                 grid-template-columns: 1fr;
                 gap: 0.12rem;
+            }
+
+            .admin-edit-fields {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -808,13 +1328,17 @@ $rowCount = count($table['rows']);
             <div class="admin-toolbar">
                 <span class="admin-stat"><?= e((string)$rowCount) ?> prijav</span>
                 <a class="btn btn-secondary" href="/">Nazaj na domačo stran</a>
-                <a class="btn btn-secondary" href="/admin?download=xls">Prenesi XLS</a>
+                <a class="btn btn-secondary" href="/admin?download=xls<?= $adminSortQuery !== '' ? '&' . e(ltrim($adminSortQuery, '?')): '' ?>">Prenesi XLS</a>
                 <form method="post" class="admin-inline-form">
                     <input type="hidden" name="action" value="logout">
                     <button type="submit" class="btn btn-secondary">Odjava</button>
                 </form>
             </div>
         </section>
+
+		<?php if ($adminMessage !== ''): ?>
+            <div class="admin-alert <?= $adminMessageType === 'error' ? 'error': 'success' ?>"><?= e($adminMessage) ?></div>
+		<?php endif; ?>
 
         <section class="admin-card admin-table-card">
 
@@ -828,33 +1352,75 @@ $rowCount = count($table['rows']);
                         <table class="admin-table" aria-label="Seznam prijav">
                             <thead>
                             <tr>
-                                <th>Ime</th>
-                                <th>Oddano</th>
-                                <th>Ustanova</th>
-                                <th>Način plačila</th>
-                                <th>Kontakt</th>
-                                <th>Predstavitev</th>
+                                <th aria-sort="none" class="admin-sequence-heading">
+                                    <button type="button" class="admin-sort-button" data-sort-key="sequence">
+                                        <span>#</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="submitted_at">
+                                        <span>Oddano</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="name">
+                                        <span>Ime</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="institution">
+                                        <span>Ustanova</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="payment_method">
+                                        <span>Način plačila</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="contact">
+                                        <span>Kontakt</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
+                                <th aria-sort="none">
+                                    <button type="button" class="admin-sort-button" data-sort-key="presentation_type">
+                                        <span>Predstavitev</span><span class="admin-sort-arrow" aria-hidden="true">↕</span>
+                                    </button>
+                                </th>
                             </tr>
                             </thead>
                             <tbody>
 							<?php foreach ($table['rows'] as $index => $row): ?>
 								<?php
+								$contactSummary = trim((sgk_admin_summary_value($row, 'email') ?: '') .
+									((sgk_admin_summary_value($row, 'phone') ?: '') !== '' ?
+										' / ' . sgk_admin_summary_value($row, 'phone'): ''));
 								$detailPayload = [
-									'name'     => sgk_admin_row_full_name($row),
-									'subtitle' => trim((string)($row['email'] ?? '')),
-									'sections' => sgk_admin_detail_sections($row),
+									'rowIndex'            => $index,
+									'originalSubmittedAt' => trim((string)($row['submitted_at'] ?? '')),
+									'originalEmail'       => trim((string)($row['email'] ?? '')),
+									'name'                => sgk_admin_row_full_name($row),
+									'subtitle'            => trim((string)($row['email'] ?? '')),
+									'fields'              => sgk_admin_edit_fields($table['headers'], $row),
+									'sections'            => sgk_admin_detail_sections($row),
 								];
 								?>
                                 <tr class="<?= $index === 0 ? 'is-active': '' ?>"
+                                    data-original-index="<?= e((string)$index) ?>"
+                                    data-sort-submitted_at="<?= e((string)($row['submitted_at'] ?? '')) ?>"
+                                    data-sort-name="<?= e(sgk_admin_summary_value($row, 'name')) ?>"
+                                    data-sort-institution="<?= e(sgk_admin_summary_value($row, 'institution')) ?>"
+                                    data-sort-payment_method="<?= e(sgk_admin_summary_value($row, 'payment_method')) ?>"
+                                    data-sort-contact="<?= e($contactSummary) ?>"
+                                    data-sort-presentation_type="<?= e(sgk_admin_summary_value($row, 'presentation_type')) ?>"
                                     data-preview='<?= e(json_encode($detailPayload,
 									    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}') ?>'>
-                                    <td><?= e(sgk_admin_summary_value($row, 'name') ?: '—') ?></td>
+                                    <td class="admin-sequence-cell"><?= e((string)($index + 1)) ?></td>
                                     <td><?= e(sgk_admin_summary_value($row, 'submitted_at') ?: '—') ?></td>
+                                    <td><?= e(sgk_admin_summary_value($row, 'name') ?: '—') ?></td>
                                     <td><?= e(sgk_admin_summary_value($row, 'institution') ?: '—') ?></td>
                                     <td><?= e(sgk_admin_summary_value($row, 'payment_method') ?: '—') ?></td>
-                                    <td><?= e(trim((sgk_admin_summary_value($row, 'email') ?: '') .
-											((sgk_admin_summary_value($row, 'phone') ?: '') !== '' ?
-												' / ' . sgk_admin_summary_value($row, 'phone'): '')) ?: '—') ?></td>
+                                    <td><?= e($contactSummary ?: '—') ?></td>
                                     <td><?= e(sgk_admin_summary_value($row, 'presentation_type') ?: '—') ?></td>
                                 </tr>
 							<?php endforeach; ?>
@@ -865,13 +1431,55 @@ $rowCount = count($table['rows']);
                 </div>
 			<?php endif; ?>
         </section>
+		<?php if ($table['error'] === null && $table['headers'] !== []): ?>
+            <form method="post" id="admin-delete-form" hidden>
+                <input type="hidden" name="action" value="admin_delete">
+                <input type="hidden" name="row_index">
+                <input type="hidden" name="original_submitted_at">
+                <input type="hidden" name="original_email">
+                <input type="hidden" name="sort">
+                <input type="hidden" name="dir">
+            </form>
+
+            <dialog class="admin-dialog" id="admin-edit-dialog">
+                <form method="post" id="admin-edit-form">
+                    <input type="hidden" name="action" value="admin_update">
+                    <input type="hidden" name="row_index">
+                    <input type="hidden" name="original_submitted_at">
+                    <input type="hidden" name="original_email">
+                    <input type="hidden" name="sort">
+                    <input type="hidden" name="dir">
+                    <header class="admin-dialog-header">
+                        <h2 class="admin-dialog-title">Uredi prijavo</h2>
+                    </header>
+                    <div class="admin-edit-fields" id="admin-edit-fields"></div>
+                    <footer class="admin-dialog-footer">
+                        <button type="button" class="btn btn-secondary" data-admin-edit-close>Prekliči</button>
+                        <button type="submit" class="btn btn-primary">Shrani</button>
+                    </footer>
+                </form>
+            </dialog>
+		<?php endif; ?>
 	<?php endif; ?>
 </main>
 <?php if ($isAuthenticated && $table['error'] === null && $table['headers'] !== []): ?>
     <script>
         (function () {
             const rows = Array.from(document.querySelectorAll('.admin-table tbody tr[data-preview]'));
+            const tbody = document.querySelector('.admin-table tbody');
             const preview = document.getElementById('admin-preview');
+            const sortButtons = Array.from(document.querySelectorAll('.admin-sort-button[data-sort-key]'));
+            const editDialog = document.getElementById('admin-edit-dialog');
+            const editForm = document.getElementById('admin-edit-form');
+            const editFields = document.getElementById('admin-edit-fields');
+            const deleteForm = document.getElementById('admin-delete-form');
+            const sortParams = new URLSearchParams(window.location.search);
+            const allowedSortKeys = new Set(sortButtons.map(function (button) {
+                return button.dataset.sortKey || '';
+            }));
+            let currentPayload = null;
+            let activeSortKey = allowedSortKeys.has(sortParams.get('sort')) ? sortParams.get('sort') : null;
+            let activeSortDirection = sortParams.get('dir') === 'desc' ? 'desc' : 'asc';
             if (!rows.length || !preview) return;
 
             function escapeHtml(value) {
@@ -883,7 +1491,25 @@ $rowCount = count($table['rows']);
                     .replace(/'/g, '&#39;');
             }
 
+            function readPayload(row) {
+                try {
+                    return JSON.parse(row.dataset.preview || '{}');
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            function setFormIdentity(form, payload) {
+                if (!form || !payload) return;
+                form.querySelector('[name="row_index"]').value = payload.rowIndex ?? '';
+                form.querySelector('[name="original_submitted_at"]').value = payload.originalSubmittedAt || '';
+                form.querySelector('[name="original_email"]').value = payload.originalEmail || '';
+                form.querySelector('[name="sort"]').value = activeSortKey || '';
+                form.querySelector('[name="dir"]').value = activeSortKey ? activeSortDirection : '';
+            }
+
             function renderPreview(payload) {
+                currentPayload = payload || {};
                 const name = payload && payload.name ? payload.name : 'Izbrana prijava';
                 const subtitle = payload && payload.subtitle ? payload.subtitle : '';
                 const sections = payload && Array.isArray(payload.sections) ? payload.sections : [];
@@ -895,6 +1521,10 @@ $rowCount = count($table['rows']);
                 if (subtitle) {
                     html += '<p class="admin-preview-subtitle">' + escapeHtml(subtitle) + '</p>';
                 }
+                html += '<div class="admin-preview-actions">';
+                html += '<button type="button" class="admin-action-button" data-admin-action="edit">Uredi</button>';
+                html += '<button type="button" class="admin-action-button danger" data-admin-action="delete">Izbriši</button>';
+                html += '</div>';
                 html += '</header>';
 
                 sections.forEach(function (section) {
@@ -926,22 +1556,219 @@ $rowCount = count($table['rows']);
                 preview.innerHTML = html;
             }
 
+            function openEditDialog(payload) {
+                if (!editDialog || !editForm || !editFields || !payload) return;
+
+                setFormIdentity(editForm, payload);
+                editFields.replaceChildren();
+
+                (Array.isArray(payload.fields) ? payload.fields : []).forEach(function (field) {
+                    const label = document.createElement('label');
+                    const labelText = document.createElement('span');
+                    let control;
+
+                    label.className = 'admin-edit-field';
+                    labelText.textContent = field.label || field.name || '';
+
+                    if (field.type === 'checkbox') {
+                        const checkWrap = document.createElement('span');
+                        const checkText = document.createElement('span');
+                        control = document.createElement('input');
+
+                        label.classList.add('is-checkbox');
+                        control.type = 'checkbox';
+                        control.name = 'fields[' + (field.name || '') + ']';
+                        control.value = '1';
+                        control.checked = ['1', 'true', 'yes', 'da'].includes(String(field.value || '').toLowerCase());
+                        checkWrap.className = 'admin-edit-check';
+                        checkText.textContent = 'Da';
+                        checkWrap.appendChild(control);
+                        checkWrap.appendChild(checkText);
+                        label.appendChild(labelText);
+                        label.appendChild(checkWrap);
+                        editFields.appendChild(label);
+                        return;
+                    }
+
+                    if (field.type === 'select') {
+                        control = document.createElement('select');
+                        control.name = 'fields[' + (field.name || '') + ']';
+                        Object.entries(field.options || {}).forEach(function (option) {
+                            const optionElement = document.createElement('option');
+                            optionElement.value = option[0];
+                            optionElement.textContent = option[1];
+                            optionElement.selected = option[0] === (field.value || '');
+                            control.appendChild(optionElement);
+                        });
+                    } else if (field.type === 'textarea') {
+                        control = document.createElement('textarea');
+                        control.name = 'fields[' + (field.name || '') + ']';
+                        control.rows = 4;
+                        control.value = field.value || '';
+                    } else {
+                        control = document.createElement('input');
+                        control.name = 'fields[' + (field.name || '') + ']';
+                        control.type = 'text';
+                        control.value = field.value || '';
+                    }
+
+                    label.appendChild(labelText);
+                    label.appendChild(control);
+                    editFields.appendChild(label);
+                });
+
+                if (typeof editDialog.showModal === 'function') {
+                    editDialog.showModal();
+                } else {
+                    editDialog.setAttribute('open', '');
+                }
+            }
+
+            function closeEditDialog() {
+                if (!editDialog) return;
+                if (typeof editDialog.close === 'function') {
+                    editDialog.close();
+                } else {
+                    editDialog.removeAttribute('open');
+                }
+            }
+
+            function activateRow(row) {
+                rows.forEach(function (item) {
+                    item.classList.remove('is-active');
+                });
+                row.classList.add('is-active');
+                renderPreview(readPayload(row));
+            }
+
+            function sortValue(row, key) {
+                const value = key === 'sequence'
+                    ? (row.getAttribute('data-sort-submitted_at') || '')
+                    : (row.getAttribute('data-sort-' + key) || '');
+                if (key === 'submitted_at' || key === 'sequence') {
+                    const timestamp = Date.parse(value);
+                    return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+                }
+
+                return value.toLocaleLowerCase('sl-SI');
+            }
+
+            function updateSequenceCells() {
+                Array.from(tbody.querySelectorAll('tr[data-preview]')).forEach(function (row, index) {
+                    const cell = row.querySelector('.admin-sequence-cell');
+                    if (cell) {
+                        cell.textContent = String(index + 1);
+                    }
+                });
+            }
+
+            function updateSortHeaders() {
+                sortButtons.forEach(function (button) {
+                    const key = button.dataset.sortKey || '';
+                    const th = button.closest('th');
+                    const arrow = button.querySelector('.admin-sort-arrow');
+                    const active = key === activeSortKey;
+
+                    if (th) {
+                        th.setAttribute('aria-sort', active ?
+                            (activeSortDirection === 'asc' ? 'ascending' : 'descending') : 'none');
+                    }
+
+                    if (arrow) {
+                        arrow.textContent = active ? (activeSortDirection === 'asc' ? '↑' : '↓') : '↕';
+                    }
+                });
+            }
+
+            function syncSortUrl() {
+                const params = new URLSearchParams(window.location.search);
+                params.delete('download');
+
+                if (activeSortKey) {
+                    params.set('sort', activeSortKey);
+                    params.set('dir', activeSortDirection);
+                } else {
+                    params.delete('sort');
+                    params.delete('dir');
+                }
+
+                const query = params.toString();
+                const nextUrl = window.location.pathname + (query ? '?' + query : '');
+                window.history.replaceState(null, '', nextUrl);
+            }
+
+            function sortRows(key, direction, updateUrl) {
+                if (!tbody) return;
+                if (!allowedSortKeys.has(key)) return;
+                activeSortDirection = direction || (activeSortKey === key && activeSortDirection === 'asc' ? 'desc' : 'asc');
+                activeSortKey = key;
+                updateSortHeaders();
+                if (updateUrl) {
+                    syncSortUrl();
+                }
+
+                rows.slice().sort(function (a, b) {
+                    const aValue = sortValue(a, key);
+                    const bValue = sortValue(b, key);
+                    let result;
+
+                    if (typeof aValue === 'number' && typeof bValue === 'number') {
+                        result = aValue - bValue;
+                    } else {
+                        result = String(aValue).localeCompare(String(bValue), 'sl', {
+                            numeric: true,
+                            sensitivity: 'base'
+                        });
+                    }
+
+                    if (result === 0) {
+                        result = Number(a.dataset.originalIndex || 0) - Number(b.dataset.originalIndex || 0);
+                    }
+
+                    return activeSortDirection === 'asc' ? result : -result;
+                }).forEach(function (row) {
+                    tbody.appendChild(row);
+                });
+                updateSequenceCells();
+            }
+
             rows.forEach(function (row) {
                 row.addEventListener('click', function () {
-                    rows.forEach(function (item) {
-                        item.classList.remove('is-active');
-                    });
-                    row.classList.add('is-active');
-
-                    try {
-                        renderPreview(JSON.parse(row.dataset.preview || '{}'));
-                    } catch (error) {
-                        renderPreview({});
-                    }
+                    activateRow(row);
                 });
             });
 
-            rows[0].click();
+            sortButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    sortRows(button.dataset.sortKey || '', null, true);
+                });
+            });
+
+            preview.addEventListener('click', function (event) {
+                const actionButton = event.target.closest('[data-admin-action]');
+                if (!actionButton || !currentPayload) return;
+
+                if (actionButton.dataset.adminAction === 'edit') {
+                    openEditDialog(currentPayload);
+                }
+
+                if (actionButton.dataset.adminAction === 'delete' && deleteForm) {
+                    if (!window.confirm('Izbrišem izbrani vnos?')) return;
+                    setFormIdentity(deleteForm, currentPayload);
+                    deleteForm.submit();
+                }
+            });
+
+            document.querySelectorAll('[data-admin-edit-close]').forEach(function (button) {
+                button.addEventListener('click', closeEditDialog);
+            });
+
+            updateSortHeaders();
+            if (activeSortKey) {
+                sortRows(activeSortKey, activeSortDirection, false);
+            }
+
+            (tbody ? tbody.querySelector('tr[data-preview]') : rows[0]).click();
         })();
     </script>
 <?php endif; ?>
