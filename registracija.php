@@ -139,6 +139,8 @@ function readSubmissionTable($path) {
 		$headers[] = 'extra_' . ($i + 1);
 	}
 
+	normalizeSubmissionColumns($headers, $rawRows);
+
 	$rows = [];
 	foreach ($rawRows as $row) {
 		$row = array_pad($row, $maxColumns, '');
@@ -154,6 +156,39 @@ function readSubmissionTable($path) {
 		'rows'    => $rows,
 		'error'   => null,
 	];
+}
+
+function normalizeSubmissionColumns(&$headers, &$rawRows) {
+	if (in_array('abstract_later', $headers, true)) {
+		return;
+	}
+
+	$authorsIndex = array_search('authors', $headers, true);
+	if ($authorsIndex === false) {
+		return;
+	}
+
+	$extraIndex = array_search('extra_38', $headers, true);
+	if ($extraIndex !== false) {
+		array_splice($headers, $extraIndex, 1);
+	}
+	array_splice($headers, $authorsIndex, 0, 'abstract_later');
+	$normalizedColumnCount = count($headers);
+
+	foreach ($rawRows as &$row) {
+		$row = array_values($row);
+		$hasAbstractLaterValue = isset($row[$authorsIndex]) && in_array(trim((string)$row[$authorsIndex]), [
+			'0',
+			'1'
+		], true);
+
+		if (!$hasAbstractLaterValue) {
+			array_splice($row, $authorsIndex, 0, '');
+		}
+
+		$row = array_slice(array_pad($row, $normalizedColumnCount, ''), 0, $normalizedColumnCount);
+	}
+	unset($row);
 }
 
 function writeSubmissionTable($path, $headers, $rows) {
@@ -285,6 +320,15 @@ function saveSubmissionToCsv($csvPath, $row) {
 	}
 
 	$isNewFile = !is_file($csvPath) || filesize($csvPath) === 0;
+	if (!$isNewFile) {
+		$table = readSubmissionTable($csvPath);
+		if ($table['error'] === null) {
+			$headers = array_keys($row);
+			$table['rows'][] = $row;
+			return writeSubmissionTable($csvPath, $headers, $table['rows']);
+		}
+	}
+
 	$handle = fopen($csvPath, 'ab');
 	if ($handle === false) {
 		return false;

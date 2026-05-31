@@ -54,6 +54,8 @@ function sgk_read_csv_table($path) {
 		$headers[] = 'extra_' . ($i + 1);
 	}
 
+	sgk_admin_normalize_submission_columns($headers, $rawRows);
+
 	$rows = [];
 	foreach ($rawRows as $row) {
 		$row = array_pad($row, $maxColumns, '');
@@ -69,6 +71,39 @@ function sgk_read_csv_table($path) {
 		'rows'    => $rows,
 		'error'   => null,
 	];
+}
+
+function sgk_admin_normalize_submission_columns(&$headers, &$rawRows) {
+	if (in_array('abstract_later', $headers, true)) {
+		return;
+	}
+
+	$authorsIndex = array_search('authors', $headers, true);
+	if ($authorsIndex === false) {
+		return;
+	}
+
+	$extraIndex = array_search('extra_38', $headers, true);
+	if ($extraIndex !== false) {
+		array_splice($headers, $extraIndex, 1);
+	}
+	array_splice($headers, $authorsIndex, 0, 'abstract_later');
+	$normalizedColumnCount = count($headers);
+
+	foreach ($rawRows as &$row) {
+		$row = array_values($row);
+		$hasAbstractLaterValue = isset($row[$authorsIndex]) && in_array(trim((string)$row[$authorsIndex]), [
+			'0',
+			'1'
+		], true);
+
+		if (!$hasAbstractLaterValue) {
+			array_splice($row, $authorsIndex, 0, '');
+		}
+
+		$row = array_slice(array_pad($row, $normalizedColumnCount, ''), 0, $normalizedColumnCount);
+	}
+	unset($row);
 }
 
 function sgk_admin_write_csv_table($path, $headers, $rows) {
@@ -1477,9 +1512,11 @@ $rowCount = count($table['rows']);
             const allowedSortKeys = new Set(sortButtons.map(function (button) {
                 return button.dataset.sortKey || '';
             }));
+            const requestedSort = sortParams.get('sort');
             let currentPayload = null;
-            let activeSortKey = allowedSortKeys.has(sortParams.get('sort')) ? sortParams.get('sort') : null;
-            let activeSortDirection = sortParams.get('dir') === 'desc' ? 'desc' : 'asc';
+            let activeSortKey = allowedSortKeys.has(requestedSort) ? requestedSort : 'submitted_at';
+            let activeSortDirection = sortParams.has('dir') ?
+                (sortParams.get('dir') === 'desc' ? 'desc' : 'asc') : 'desc';
             if (!rows.length || !preview) return;
 
             function escapeHtml(value) {
