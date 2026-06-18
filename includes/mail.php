@@ -15,7 +15,8 @@ class mail
         $inlineImages = [],
         $footerHtml = null,
         $fromEmail = 'izrk.monitoring@zrc-sazu.si',
-        $replyToEmail = null
+        $replyToEmail = null,
+        $cc = []
     ) {
         $mail = new PHPMailer();
         $mail->isSMTP();
@@ -39,6 +40,13 @@ class mail
                 continue;
             }
             $mail->addAddress($recipient);
+        }
+        foreach ((array) $cc as $recipient) {
+            $recipient = trim((string) $recipient);
+            if ($recipient === '') {
+                continue;
+            }
+            $mail->addCC($recipient);
         }
 
         $mail->isHTML(true);
