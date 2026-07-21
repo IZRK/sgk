@@ -69,7 +69,7 @@ function sgk_registration_schedule($today = null) {
 		],
 		'abstract_submission'     => [
 			'start' => '2026-03-16',
-			'end'   => '2026-07-20'
+			'end'   => '2026-07-26'
 		],
 		'photo_contest'           => [
 			'start' => '2026-03-16',
