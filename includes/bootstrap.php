@@ -2,7 +2,6 @@
 if (session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
-
 function sgk_load_env($path) {
 	if (!is_file($path)) {
 		return;
@@ -57,7 +56,7 @@ function sgk_registration_schedule($today = null) {
 		'today'                   => $today,
 		'registration_submission' => [
 			'start' => '2026-03-16',
-			'end'   => '2026-07-20'
+			'end'   => '2026-07-26'
 		],
 		'registration_early'      => [
 			'start' => '2026-03-16',
@@ -65,7 +64,7 @@ function sgk_registration_schedule($today = null) {
 		],
 		'registration_late'       => [
 			'start' => '2026-05-30',
-			'end'   => '2026-07-20'
+			'end'   => '2026-07-26'
 		],
 		'abstract_submission'     => [
 			'start' => '2026-03-16',
