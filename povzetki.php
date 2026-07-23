@@ -9,7 +9,7 @@ require __DIR__ . '/includes/header.php';
 
     <article class="panel panel-spacious">
       <h3>Navodila za povzetke</h3>
-      <p>Povzetki morajo biti oddani najkasneje do 20. julija 2026 v registracijskem obrazcu. Ko pri prijavi izberete obliko predstavitve <strong>Predavanje</strong> ali <strong>Plakat</strong>, se v obrazcu samodejno odprejo dodatna polja za oddajo povzetka.</p>
+      <p>Povzetki morajo biti oddani najkasneje do 26. julija 2026 v registracijskem obrazcu. Ko pri prijavi izberete obliko predstavitve <strong>Predavanje</strong> ali <strong>Plakat</strong>, se v obrazcu samodejno odprejo dodatna polja za oddajo povzetka.</p>
       <p>Udeleženci izberejo obliko predstavitve, predavanje ali plakat, pri čemer je oblika povzetka enaka za oba tipa predstavitev. S plačilom ene kotizacije je udeleženec upravičen do enega prispevka kot prvi avtor.</p>
       <div class="cta">
         <a class="btn btn-secondary" href="/registracija">Na registracijo</a>

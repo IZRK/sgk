@@ -78,11 +78,12 @@ function has_presentation($presentationType) {
 }
 
 function build_message($editUrl, $hasPresentation) {
+	$abstractDeadline = sgk_registration_schedule()['abstract_submission']['end'];
 	$text = "Pozdravljeni vsi, ki se boste udeležili 7. slovenskega geološkega kongresa med 1. in 3. oktobrom v Lipici.\n\n"
 		. "Možnost urejanja/oddaje povzetka preko spletne strani je na voljo samo udeležencem, ki so pri registraciji izbrali predstavitev.\n\n";
 
 	if ($hasPresentation) {
-		$text .= "Ker ste se že registrirali na 7. SGK in ste oddali prispevek oziroma ste zapisali, da ga boste oddali naknadno (rok je 20. 7.), lahko prispevek oddate/uredite na naslednji povezavi:\n"
+		$text .= "Ker ste se že registrirali na 7. SGK in ste oddali prispevek oziroma ste zapisali, da ga boste oddali naknadno (rok je " . sgk_format_short_date($abstractDeadline) . "), lahko prispevek oddate/uredite na naslednji povezavi:\n"
 			. $editUrl . "\n\n"
 			. "Prosim, da v izogib ponovni registraciji preko obrazca na spletni strani ali posamičnemu dopisovanju z uredniškim odborom raje izberete urejanje/pošiljanje povzetka preko povezave.\n\n";
 	} else {

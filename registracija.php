@@ -865,7 +865,7 @@ require __DIR__ . '/includes/header.php';
 			<?php elseif ($formLocked) : ?>
                 <article class="panel">
                     <h3>Registracija je zaključena</h3>
-                    <p>Oddaja registracije je bila odprta do 20. julija 2026. Novi vnosi niso več možni.</p>
+                    <p>Oddaja registracije je bila odprta do 26. julija 2026. Novi vnosi niso več možni.</p>
                 </article>
 			<?php endif; ?>
 
@@ -1053,7 +1053,7 @@ require __DIR__ . '/includes/header.php';
                         <h3>Povzetek prispevka</h3>
                         <label class="inline-check"><input type="checkbox" name="abstract_later"
                                                            value="1" <?= $formData['abstract_later'] === '1' ? 'checked':
-								'' ?> <?= $presentationReadonlyAttr ?>> Povzetek prispevka bo oddan kasneje, do 20. 7. 2026</label>
+								'' ?> <?= $presentationReadonlyAttr ?>> Povzetek prispevka bo oddan kasneje, do <?= e(sgk_format_short_date($registrationSchedule['abstract_submission']['end'])) ?> <?= e(substr($registrationSchedule['abstract_submission']['end'], 0, 4)) ?></label>
                         <div class="form-grid">
                             <label class="form-span-full">Naslov prispevka
                                 <input type="text" name="title" id="title"
