@@ -121,7 +121,7 @@ require __DIR__ . '/includes/header.php';
 
     <article class="panel panel-spacious">
       <h3>Organizacijski odbor</h3>
-      <p>Astrid Švara, Nadja Zupan Hajna, Martin Knez, Bojan Otoničar, Mitja Prelovšek, Franci Gabrovšek, Cyril Mayaud, Uroš Novak, Matej Jelovčan, Tinkara Mazej, Filip Šarc, Metka Petrič, Stanka Šebela, Blaž Kogovšek.</p>
+      <p>Astrid Švara, Nadja Zupan Hajna, Martin Knez, Bojan Otoničar, Mitja Prelovšek, Franci Gabrovšek, Cyril Mayaud, Uroš Novak, Matej Jelovčan, Tinkara Mazej, Filip Šarc, Metka Petrič, Stanka Šebela, Blaž Kogovšek, Darja Kolar, Jasmina Čeligoj Biščak.</p>
     </article>
 
     <article class="panel panel-spacious">

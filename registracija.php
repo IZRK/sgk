@@ -864,11 +864,8 @@ require __DIR__ . '/includes/header.php';
                 </article>
 			<?php elseif ($formLocked) : ?>
                 <article class="panel">
-                    <h3>REDNE REGISTRACIJE SO ZAKLJUČENE</h3>
-                    <p>Oddaja registracij in povzetkov je zaključena. Izjemoma so registracije (brez oddaje povzetkov)
-                        na kongres odprte še do 31. 8. 2026 na naslov
-                        <a href="mailto:astrid.svara@zrc-sazu.si">astrid.svara@zrc-sazu.si</a>. Prejem kongresnih
-                        materialov bo do tega datuma omejen in odvisen od razpoložljivosti. Hvala za razumevanje.</p>
+					<h3>REGISTRACIJE SO ZAKLJUČENE</h3>
+					<p>Oddaja registracij in povzetkov je zaključena.</p>
                 </article>
 			<?php endif; ?>
 

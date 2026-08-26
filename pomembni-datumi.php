@@ -20,7 +20,7 @@ require __DIR__ . '/includes/header.php';
       <tbody>
         <tr><td>1. obvestilo</td><td>20. 2.</td><td></td></tr>
         <tr><td>2. obvestilo</td><td>april/maj</td><td></td></tr>
-        <tr><td>3. obvestilo</td><td>avgust/september</td><td></td></tr>
+        <tr><td>3. obvestilo</td><td>september</td><td></td></tr>
         <tr><td>Zgodnja prijava</td><td><?= e(sgk_format_short_date_range($registrationSchedule['registration_early']['start'], $registrationSchedule['registration_early']['end'])) ?></td><td>možna zgodnja prijava s kasnejšo oddajo prispevka</td></tr>
         <tr><td>Oddaja prispevka</td><td><?= e(sgk_format_short_date_range($registrationSchedule['abstract_submission']['start'], $registrationSchedule['abstract_submission']['end'])) ?></td><td></td></tr>
         <tr><td>Pozna prijava z oddajo prispevka</td><td><?= e(sgk_format_short_date_range($registrationSchedule['registration_late']['start'], $registrationSchedule['registration_late']['end'])) ?></td><td></td></tr>

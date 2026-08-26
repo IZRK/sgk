@@ -466,13 +466,14 @@ h2 {
   padding: .75rem;
   border: 1px solid var(--line);
   border-radius: .75rem;
-  background: #fff;
+  background: rgba(13, 90, 114, 0.42);
   text-decoration: none;
+  transition: background-color .18s ease, border-color .18s ease;
 }
 
 .sponsor-card[href]:hover {
-  border-color: rgba(13, 90, 114, 0.3);
-  background: rgba(13, 90, 114, 0.08);
+  border-color: rgba(13, 90, 114, 0.45);
+  background: rgba(13, 90, 114, 0.48);
 }
 
 .sponsor-logo {
