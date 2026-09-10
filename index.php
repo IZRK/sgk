@@ -24,6 +24,7 @@ $routes = [
     'ekskurzije' => 'ekskurzije.php',
     'prizorisce' => 'prizorisce.php',
     'sponzorji' => 'sponzorji.php',
+    'donatorji-in-sodelujoci' => 'donatorji-in-sodelujoci.php',
     'circular' => 'circular.php',
     'drugo-obvestilo' => 'drugo-obvestilo.php',
     'admin' => 'admin.php',
@@ -115,7 +116,11 @@ require __DIR__ . '/includes/header.php';
           <a class="donor-logo-link" href="https://www.skiah.si/" target="_blank" rel="noreferrer" aria-label="SKIAH">
             <img class="donor-logo donor-logo-skiah" src="assets/donors/skiah_modri-02d003.png" alt="SKIAH" loading="lazy" />
           </a>
+          <a class="donor-logo-link" href="https://www.geo-zs.si/" target="_blank" rel="noreferrer" aria-label="Geološki zavod Slovenije">
+            <img class="donor-logo donor-logo-geozs" src="assets/donors/geozs-logo.jpg" alt="Geološki zavod Slovenije" loading="lazy" />
+          </a>
         </div>
+        <p><a class="home-link" href="/donatorji-in-sodelujoci">Donatorji in sodelujoči</a></p>
       </article>
     </div>
 

@@ -7,6 +7,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container page-flow">
     <h2>Prizorišče kongresa</h2>
     <p class="lead">Kongres poteka v Hotelu Maestoso in kongresnem centru Conversano v Lipici.</p>
+    <p class="venue-parking"><strong>Parkiranje:</strong> Udeleženci imajo v času kongresa na voljo brezplačno parkiranje pred hotelom.</p>
 
     <div class="grid grid-equal">
       <article class="panel">

@@ -12,6 +12,7 @@ $menu = [
     'program' => ['label' => 'Program', 'href' => '/program'],
     'ekskurzije' => ['label' => 'Ekskurzije', 'href' => '/ekskurzije'],
     'sponzorji' => ['label' => 'Sponzorji', 'href' => '/sponzorji'],
+    'donatorji-in-sodelujoci' => ['label' => 'Donatorji in sodelujoči', 'href' => '/donatorji-in-sodelujoci'],
     'prizorisce' => ['label' => 'Prizorišče', 'href' => '/prizorisce'],
 ];
 ?>
