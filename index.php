@@ -43,22 +43,47 @@ if ($routes[$slug] !== null) {
 
 $pageTitle = '7. Slovenski geološki kongres';
 $activePage = 'home';
+$thirdCircularFile = '3. OBVESTILO 7SGK_15.9.2026.pdf';
+$thirdCircularHref = '/' . rawurlencode($thirdCircularFile);
+$thirdCircularPath = __DIR__ . '/' . $thirdCircularFile;
 $secondCircularHref = '/assets/7SGK_drugo_obvestilo_13.5.2026.pdf';
 $secondCircularPath = __DIR__ . $secondCircularHref;
+$visitorStatementFile = 'Izjava o omejitvi odgovornosti_obiskovalci_sklop3_2026.pdf';
+$visitorStatementLabel = 'Izjava o omejitvi odgovornosti za obiskovalce';
+$visitorStatementHref = '/' . rawurlencode($visitorStatementFile);
+$visitorStatementPath = __DIR__ . '/' . $visitorStatementFile;
+$safetyPresentationFile = 'OBISKI_varnostni poduk_2026.pptx';
+$safetyPresentationLabel = 'Varnostni napotki za obiskovalce';
+$safetyPresentationHref = '/' . rawurlencode($safetyPresentationFile);
+$safetyPresentationPath = __DIR__ . '/' . $safetyPresentationFile;
 require __DIR__ . '/includes/header.php';
 ?>
 <section>
   <div class="container home-flow">
     <h2>Dobrodošli</h2>
-    <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Prijave se odprejo v ponedeljek, 16. 3. 2026. Lepo vabljeni!</p>
+    <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Lepo vabljeni!</p>
 
     <div class="cta">
+      <?php if (is_file($thirdCircularPath)): ?>
+        <a class="btn btn-primary" href="<?= e($thirdCircularHref) ?>" download>3. obvestilo</a>
+      <?php else: ?>
+        <span class="btn btn-primary btn-disabled" aria-disabled="true">3. obvestilo</span>
+      <?php endif; ?>
       <?php if (is_file($secondCircularPath)): ?>
         <a class="btn btn-primary" href="<?= e($secondCircularHref) ?>" download>2. obvestilo</a>
       <?php else: ?>
         <span class="btn btn-primary btn-disabled" aria-disabled="true">2. obvestilo</span>
       <?php endif; ?>
       <a class="btn btn-primary" href="/circular">1. obvestilo</a>
+    </div>
+
+    <div class="document-links">
+      <?php if (is_file($safetyPresentationPath)): ?>
+        <a href="<?= e($safetyPresentationHref) ?>" target="_blank" rel="noopener"><?= e($safetyPresentationLabel) ?></a>
+      <?php endif; ?>
+      <?php if (is_file($visitorStatementPath)): ?>
+        <a href="<?= e($visitorStatementHref) ?>" target="_blank" rel="noopener"><?= e($visitorStatementLabel) ?></a>
+      <?php endif; ?>
     </div>
 
     <div class="cards">

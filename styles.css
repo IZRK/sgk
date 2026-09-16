@@ -275,6 +275,40 @@ h2 {
   gap: .8rem;
 }
 
+.document-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem .8rem;
+}
+
+.document-links a {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: .62rem .95rem;
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  color: var(--accent);
+  background: rgba(255, 255, 255, .78);
+  box-shadow: 0 6px 16px rgba(10, 26, 31, .06);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.document-links a:hover,
+.document-links a:focus-visible {
+  color: #fff;
+  background: linear-gradient(135deg, #0f6984, #0d4256);
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.document-links a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .btn {
   appearance: none;
   display: inline-flex;
@@ -338,6 +372,16 @@ h2 {
 
 .program-lead {
   max-width: none;
+}
+
+.program-pdf-frame {
+  display: block;
+  width: 100%;
+  height: min(82svh, 1100px);
+  min-height: 720px;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
 }
 
 .resource-link-list {
