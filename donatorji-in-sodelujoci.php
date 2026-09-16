@@ -20,6 +20,9 @@ require __DIR__ . '/includes/header.php';
         <a class="role-logo-card" href="https://www.geo-zs.si/" target="_blank" rel="noreferrer" aria-label="Geološki zavod Slovenije">
           <img class="role-logo" src="assets/donors/geozs-logo.jpg" alt="Geološki zavod Slovenije" loading="lazy" />
         </a>
+        <a class="role-logo-card" href="http://www.alfageo.si/" target="_blank" rel="noreferrer" aria-label="Alfageo">
+          <img class="role-logo" src="Logo_AlfaGeo.svg" alt="Alfageo d.o.o." loading="lazy" />
+        </a>
       </div>
     </article>
 
