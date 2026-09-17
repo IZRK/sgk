@@ -1,7 +1,7 @@
 <?php
 $pageTitle = 'Program kongresa | 7. Slovenski geološki kongres';
 $activePage = 'program';
-$programPdfFile = 'PROGRAM, PREDAVANJA, PLAKATI_16.9.2026.pdf';
+$programPdfFile = 'Program-7sgk.pdf';
 $programPdfHref = '/' . rawurlencode($programPdfFile);
 $programPdfPath = __DIR__ . '/' . $programPdfFile;
 require __DIR__ . '/includes/header.php';
