@@ -56,6 +56,15 @@ require __DIR__ . '/includes/header.php';
         <a class="role-logo-card" href="https://www.ora.si/" target="_blank" rel="noreferrer" aria-label="Območna razvojna agencija Kras in Brkini">
           <img class="role-logo" src="assets/collaborators/ora-logo.jpg" alt="ORA, Območna razvojna agencija Kras in Brkini" loading="lazy" />
         </a>
+        <div class="role-logo-card">
+          <img class="role-logo" src="assets/collaborators/unesco_natcom_slovenian_slv_B.png" alt="UNESCO" loading="lazy" />
+        </div>
+        <div class="role-logo-card">
+          <img class="role-logo" src="assets/collaborators/Logo_ZRSVN.jpg" alt="ZRSVN" loading="lazy" />
+        </div>
+        <div class="role-logo-card">
+          <img class="role-logo" src="assets/collaborators/IGD Full Version Slovenian PNG _2026-02.png" alt="Mednarodni dan geopestrosti" loading="lazy" />
+        </div>
       </div>
     </article>
   </div>
