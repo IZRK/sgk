@@ -29,12 +29,9 @@ require __DIR__ . '/includes/header.php';
     <article class="panel logo-section">
       <h3>Sodelujoči in razstavljavci</h3>
       <div class="role-logo-grid" aria-label="Sodelujoči in razstavljavci">
-        <div class="role-logo-card">
-          <img class="role-logo" src="assets/collaborators/ukmar-logo.jpg" alt="Kmetija Ukmar, Kras, Ponikve" loading="lazy" />
-        </div>
-        <div class="role-logo-card">
-          <img class="role-logo" src="assets/collaborators/konzorcij-kraskih-pridelovalcev-terana.jpg" alt="Konzorcij kraških pridelovalcev terana" loading="lazy" />
-        </div>
+        <a class="role-logo-card" href="https://vinakras.si/" target="_blank" rel="noreferrer" aria-label="Vinakras">
+          <img class="role-logo" src="assets/collaborators/vinakras-logo.png" alt="Vinakras Sežana" loading="lazy" />
+        </a>
         <div class="role-logo-card">
           <img class="role-logo" src="assets/collaborators/tavcar-kamnose-stvo.png" alt="Tavčar kamnoseštvo" loading="lazy" />
         </div>
