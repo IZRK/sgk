@@ -9,7 +9,7 @@ require __DIR__ . '/includes/header.php';
 <section>
   <div class="container page-flow">
     <h2>Program kongresa</h2>
-    <p class="lead program-lead">Program kongresa je bil posodobljen 16. 9. 2026.</p>
+    <p class="lead program-lead">Program kongresa je bil posodobljen 23. 9. 2026.</p>
 
     <?php if (is_file($programPdfPath)): ?>
       <iframe

@@ -43,7 +43,7 @@ if ($routes[$slug] !== null) {
 
 $pageTitle = '7. Slovenski geološki kongres';
 $activePage = 'home';
-$thirdCircularFile = '3. OBVESTILO 7SGK_15.9.2026.pdf';
+$thirdCircularFile = '3.obvestilo-7sgk.pdf';
 $thirdCircularHref = '/' . rawurlencode($thirdCircularFile);
 $thirdCircularPath = __DIR__ . '/' . $thirdCircularFile;
 $secondCircularHref = '/assets/7SGK_drugo_obvestilo_13.5.2026.pdf';
