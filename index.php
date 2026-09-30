@@ -102,11 +102,9 @@ require __DIR__ . '/includes/header.php';
     </div>
 
     <article class="panel panel-spacious">
-      <h3>O kongresu</h3>
-      <p>Sedmi slovenski geološki kongres je posvečen izmenjavi novih raziskovalnih rezultatov, širjenju geološke znanosti in pomenu geologije za širšo družbo.</p>
-      <p>Osrednji del kongresa poteka v Lipici, v Hotelu Maestoso in kongresnem centru Conversano. Ekskurzije se širijo tudi na druga območja Krasa.</p>
-      <p>Kongres omogoča dialog med raziskovalci, strokovnjaki iz aplikativnega okolja, uporabniki geoloških raziskav in študenti.</p>
-      <p>Uradni jezik kongresa je slovenščina. Za tuje avtorje je dovoljena oddaja prispevkov in predstavitev v angleščini.</p>
+      <h3>KREDITNE TOČKE IZS</h3>
+      <p>Pooblaščeni in nadzorni inženirji za udeležbo na strokovnem usposabljanju pridobijo 3 kreditne točke iz izbirnih vsebin skladno s Splošnim aktom o stalnem poklicnem usposabljanju pooblaščenih inženirjev.</p>
+      <p>Po opravljenem kongresu prejmejo udeleženi inženirji potrdilo o udeležbi iz katerega so razvidne kreditne točke. Tako od IZS ne boste prejeli dodatnega obvestila, prav tako vam na IZS ni potrebno vlagati vlog za dodelitev kreditnih točk, saj bomo vlogo oddali organizatorji kongresa.</p>
     </article>
 
     <div class="grid">

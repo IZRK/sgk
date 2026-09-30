@@ -12,6 +12,7 @@ require __DIR__ . '/includes/header.php';
     <p class="lead program-lead">Program kongresa je bil posodobljen 23. 9. 2026.</p>
 
     <?php if (is_file($programPdfPath)): ?>
+      <p><a class="btn btn-primary" href="<?= e($programPdfHref) ?>" target="_blank" rel="noopener">Odpri program v PDF</a></p>
       <iframe
         class="program-pdf-frame"
         src="<?= e($programPdfHref) ?>"
