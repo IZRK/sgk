@@ -43,6 +43,8 @@ if ($routes[$slug] !== null) {
 
 $pageTitle = '7. Slovenski geološki kongres';
 $activePage = 'home';
+$proceedingsFile = '7SGK_zbornik_celota.pdf';
+$proceedingsHref = '/' . rawurlencode($proceedingsFile);
 $thirdCircularFile = '3.obvestilo-7sgk.pdf';
 $thirdCircularHref = '/' . rawurlencode($thirdCircularFile);
 $thirdCircularPath = __DIR__ . '/' . $thirdCircularFile;
@@ -62,6 +64,10 @@ require __DIR__ . '/includes/header.php';
   <div class="container home-flow">
     <h2>Dobrodošli</h2>
     <p class="lead">Obveščamo vas, da Inštitut za raziskovanje krasa ZRC SAZU organizira 7. slovenski geološki kongres. Kongres bo potekal v Hotelu Maestoso in kongresnem centru Conversano v Lipici, na Krasu, od 1. do 3. oktobra 2026. Lepo vabljeni!</p>
+
+    <div class="cta">
+      <a class="btn btn-primary" href="<?= e($proceedingsHref) ?>" download>Zbornik kongresa (PDF)</a>
+    </div>
 
     <div class="cta">
       <?php if (is_file($thirdCircularPath)): ?>
