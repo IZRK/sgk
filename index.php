@@ -23,6 +23,7 @@ $routes = [
     'program' => 'program.php',
     'ekskurzije' => 'ekskurzije.php',
     'prizorisce' => 'prizorisce.php',
+    'fotografije' => 'fotografije.php',
     'sponzorji' => 'sponzorji.php',
     'donatorji-in-sodelujoci' => 'donatorji-in-sodelujoci.php',
     'circular' => 'circular.php',

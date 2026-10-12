@@ -1,0 +1,350 @@
+{
+  "groups": [
+    {
+      "slug": "program-v-dvorani-capriola",
+      "title": "Program v dvorani Capriola",
+      "photos": [
+        {
+          "file": "2-foto-cyril-mayaud.webp",
+          "thumbnail": "2-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "3-foto-cyril-mayaud.webp",
+          "thumbnail": "3-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "5-foto-cyril-mayaud.webp",
+          "thumbnail": "5-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "4-foto-cyril-mayaud.webp",
+          "thumbnail": "4-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "1-foto-astrid-svara.webp",
+          "thumbnail": "1-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "3-foto-astrid-svara.webp",
+          "thumbnail": "3-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "7-foto-cyril-mayaud.webp",
+          "thumbnail": "7-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "6-foto-cyril-mayaud.webp",
+          "thumbnail": "6-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "2-foto-astrid-svara.webp",
+          "thumbnail": "2-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "4-foto-astrid-svara.webp",
+          "thumbnail": "4-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "8-foto-cyril-mayaud.webp",
+          "thumbnail": "8-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "9-foto-cyril-mayaud.webp",
+          "thumbnail": "9-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "10-foto-cyril-mayaud.webp",
+          "thumbnail": "10-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "11-foto-cyril-mayaud.webp",
+          "thumbnail": "11-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "12-foto-cyril-mayaud.webp",
+          "thumbnail": "12-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "13-foto-cyril-mayaud.webp",
+          "thumbnail": "13-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "14-foto-cyril-mayaud.webp",
+          "thumbnail": "14-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "15-foto-cyril-mayaud.webp",
+          "thumbnail": "15-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "16-foto-cyril-mayaud.webp",
+          "thumbnail": "16-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "17-foto-cyril-mayaud.webp",
+          "thumbnail": "17-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "18-foto-cyril-mayaud.webp",
+          "thumbnail": "18-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "19-foto-cyril-mayaud.webp",
+          "thumbnail": "19-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "20-foto-cyril-mayaud.webp",
+          "thumbnail": "20-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "21-foto-cyril-mayaud.webp",
+          "thumbnail": "21-foto-cyril-mayaud-thumb.webp",
+          "photographer": "Cyril Mayaud"
+        },
+        {
+          "file": "1-foto-blaz-kogovsek.webp",
+          "thumbnail": "1-foto-blaz-kogovsek-thumb.webp",
+          "photographer": "Blaž Kogovšek"
+        },
+        {
+          "file": "2-foto-blaz-kogovsek.webp",
+          "thumbnail": "2-foto-blaz-kogovsek-thumb.webp",
+          "photographer": "Blaž Kogovšek"
+        }
+      ]
+    },
+    {
+      "slug": "registracije-in-ostalo",
+      "title": "Registracije in ostalo",
+      "photos": [
+        {
+          "file": "1-foto-astrid-svara.webp",
+          "thumbnail": "1-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "2-foto-astrid-svara.webp",
+          "thumbnail": "2-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "3-foto-astrid-svara.webp",
+          "thumbnail": "3-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "4-foto-astrid-svara.webp",
+          "thumbnail": "4-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "5-foto-astrid-svara.webp",
+          "thumbnail": "5-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "6-foto-astrid-svara.webp",
+          "thumbnail": "6-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "7-foto-astrid-svara.webp",
+          "thumbnail": "7-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "foto-grega-juvan.webp",
+          "thumbnail": "foto-grega-juvan-thumb.webp",
+          "photographer": "Grega Juvan"
+        }
+      ]
+    },
+    {
+      "slug": "ekskurzija-v-kamnolomu-lipica-i",
+      "title": "Ekskurzija v kamnolomu Lipica I",
+      "photos": [
+        {
+          "file": "1-foto-anja-torkar.webp",
+          "thumbnail": "1-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "2-foto-anja-torkar.webp",
+          "thumbnail": "2-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "3-foto-anja-torkar.webp",
+          "thumbnail": "3-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "4-foto-anja-torkar.webp",
+          "thumbnail": "4-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "5-foto-anja-torkar.webp",
+          "thumbnail": "5-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "6-foto-anja-torkar.webp",
+          "thumbnail": "6-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        }
+      ]
+    },
+    {
+      "slug": "program-v-dvorani-bonavista",
+      "title": "Program v dvorani Bonavista",
+      "photos": [
+        {
+          "file": "1-foto-jasmina-celigoj-biscak.webp",
+          "thumbnail": "1-foto-jasmina-celigoj-biscak-thumb.webp",
+          "photographer": "Jasmina Čeligoj Biščak"
+        },
+        {
+          "file": "2-foto-astrid-svara.webp",
+          "thumbnail": "2-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "1-foto-astrid-svara.webp",
+          "thumbnail": "1-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        }
+      ]
+    },
+    {
+      "slug": "ekskurzija-2tdk",
+      "title": "Ekskurzija 2TDK",
+      "photos": [
+        {
+          "file": "1-foto-anja-torkar.webp",
+          "thumbnail": "1-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "2-foto-anja-torkar.webp",
+          "thumbnail": "2-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "8-matija-kriznar-mk1-4781-7sgk.webp",
+          "thumbnail": "8-matija-kriznar-mk1-4781-7sgk-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "7-matija-kriznarmk1-4786-7sgk.webp",
+          "thumbnail": "7-matija-kriznarmk1-4786-7sgk-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "3-foto-anja-torkar.webp",
+          "thumbnail": "3-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "4-foto-anja-torkar.webp",
+          "thumbnail": "4-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "1-foto-astrid-svara.webp",
+          "thumbnail": "1-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "2-foto-astrid-svara.webp",
+          "thumbnail": "2-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "2tdk-ekskurzija-skupinskamatija-kriznar.webp",
+          "thumbnail": "2tdk-ekskurzija-skupinskamatija-kriznar-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "5-foto-anja-torkar.webp",
+          "thumbnail": "5-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "6-foto-anja-torkar.webp",
+          "thumbnail": "6-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        }
+      ]
+    },
+    {
+      "slug": "ekskurzija-v-skocjanske-jame",
+      "title": "Ekskurzija v Škocjanske jame",
+      "photos": [
+        {
+          "file": "1-foto-astrid-svara.webp",
+          "thumbnail": "1-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "2-foto-astrid-svara.webp",
+          "thumbnail": "2-foto-astrid-svara-thumb.webp",
+          "photographer": "Astrid Švara"
+        },
+        {
+          "file": "1-foto-anja-torkar.webp",
+          "thumbnail": "1-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "5-matija-kriznar-7sgk-skocjanske.webp",
+          "thumbnail": "5-matija-kriznar-7sgk-skocjanske-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "4-matija-kriznar-7sgk-skocjanske03.webp",
+          "thumbnail": "4-matija-kriznar-7sgk-skocjanske03-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "2-foto-anja-torkar.webp",
+          "thumbnail": "2-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        },
+        {
+          "file": "6-matija-kriznar-7sgk-skocjanske02.webp",
+          "thumbnail": "6-matija-kriznar-7sgk-skocjanske02-thumb.webp",
+          "photographer": "Matija Križnar"
+        },
+        {
+          "file": "3-foto-anja-torkar.webp",
+          "thumbnail": "3-foto-anja-torkar-thumb.webp",
+          "photographer": "Anja Torkar"
+        }
+      ]
+    }
+  ]
+}

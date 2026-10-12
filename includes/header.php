@@ -14,6 +14,7 @@ $menu = [
     'sponzorji' => ['label' => 'Sponzorji', 'href' => '/sponzorji'],
     'donatorji-in-sodelujoci' => ['label' => 'Donatorji in sodelujoči', 'href' => '/donatorji-in-sodelujoci'],
     'prizorisce' => ['label' => 'Prizorišče', 'href' => '/prizorisce'],
+    'fotografije' => ['label' => 'Fotografije', 'href' => '/fotografije'],
 ];
 ?>
 <!doctype html>
