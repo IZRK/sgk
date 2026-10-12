@@ -118,11 +118,11 @@ require __DIR__ . '/includes/header.php';
             </div>
           </header>
           <div class="photo-lightbox-stage">
-            <button class="photo-lightbox-arrow" id="photo-lightbox-previous" type="button" aria-label="Prejšnja fotografija"><span aria-hidden="true">&#8249;</span></button>
+            <button class="photo-lightbox-arrow" id="photo-lightbox-previous" type="button" aria-label="Prejšnja fotografija"><svg class="photo-lightbox-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 4.5 9 12l6 7.5" /></svg></button>
             <figure class="photo-lightbox-figure">
               <img class="photo-lightbox-image" id="photo-lightbox-image" alt="" decoding="async" />
             </figure>
-            <button class="photo-lightbox-arrow" id="photo-lightbox-next" type="button" aria-label="Naslednja fotografija"><span aria-hidden="true">&#8250;</span></button>
+            <button class="photo-lightbox-arrow" id="photo-lightbox-next" type="button" aria-label="Naslednja fotografija"><svg class="photo-lightbox-arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 4.5 6 7.5-6 7.5" /></svg></button>
           </div>
           <nav class="photo-lightbox-thumbnails" aria-label="Izberi fotografijo">
             <?php foreach ($lightboxPhotos as $photo): ?>

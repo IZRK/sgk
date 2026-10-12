@@ -1571,20 +1571,24 @@ h2 {
 }
 
 .photo-lightbox-shell {
+  position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   height: min(860px, calc(100vh - 1.5rem));
   height: min(860px, calc(100dvh - 1.5rem));
 }
 
 .photo-lightbox-toolbar {
+  position: absolute;
+  z-index: 3;
+  inset: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: .8rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, .12);
-  background: #0b1214;
+  padding: .8rem 1rem 1.4rem;
+  background: linear-gradient(180deg, rgba(8, 14, 16, .82), rgba(8, 14, 16, 0));
+  pointer-events: none;
 }
 
 .photo-lightbox-info {
@@ -1615,6 +1619,7 @@ h2 {
   flex: 0 0 auto;
   align-items: center;
   gap: .8rem;
+  pointer-events: auto;
 }
 
 .photo-lightbox-position {
@@ -1650,12 +1655,12 @@ h2 {
 }
 
 .photo-lightbox-stage {
+  position: relative;
   display: grid;
-  grid-template-columns: 3.25rem minmax(0, 1fr) 3.25rem;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: .65rem;
   min-height: 0;
-  padding: .75rem 1rem;
+  padding: 0;
   background: #11191b;
 }
 
@@ -1672,18 +1677,39 @@ h2 {
   display: block;
   width: 100%;
   height: 100%;
-  max-height: calc(100vh - 12rem);
-  max-height: calc(100dvh - 12rem);
+  max-height: 100%;
   object-fit: contain;
 }
 
 .photo-lightbox-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
   width: 3rem;
   height: 3rem;
-  justify-self: center;
   border-radius: 50%;
-  font-size: 2.5rem;
-  line-height: 1;
+  background: rgba(8, 15, 17, .58);
+  backdrop-filter: blur(5px);
+  transform: translateY(-50%);
+}
+
+.photo-lightbox-arrow-icon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#photo-lightbox-previous {
+  left: .85rem;
+}
+
+#photo-lightbox-next {
+  right: .85rem;
 }
 
 .photo-lightbox-thumbnails {
@@ -1755,35 +1781,34 @@ h2 {
 
   .photo-lightbox-toolbar {
     gap: .5rem;
-    padding: .65rem .7rem;
+    padding: .55rem .6rem 1.1rem;
   }
 
   .photo-lightbox-stage {
-    grid-template-columns: 2.9rem minmax(0, 1fr) 2.9rem;
-    gap: .2rem;
-    padding: .5rem .25rem;
+    padding: 0;
   }
 
   .photo-lightbox-arrow {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: .55rem;
-    font-size: 2rem;
+    width: 2.85rem;
+    height: 2.85rem;
   }
 
-  .photo-lightbox-image {
-    max-height: calc(100vh - 13rem);
-    max-height: calc(100dvh - 13rem);
+  #photo-lightbox-previous {
+    left: .45rem;
+  }
+
+  #photo-lightbox-next {
+    right: .45rem;
   }
 
   .photo-lightbox-thumbnails {
     gap: .4rem;
-    padding: .55rem;
+    padding: .4rem .5rem;
   }
 
   .photo-lightbox-thumbnail {
-    flex-basis: 5rem;
-    height: 3.75rem;
+    flex-basis: 4.5rem;
+    height: 3.25rem;
   }
 }
 
