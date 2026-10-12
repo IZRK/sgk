@@ -69,7 +69,7 @@ require __DIR__ . '/includes/header.php';
     <p class="lead">Fotografije s 7. slovenskega geološkega kongresa so razvrščene kronološko. Avtor je naveden ob vsaki fotografiji.</p>
 
     <?php if ($totalPhotos > 0): ?>
-      <nav class="photo-gallery-index" aria-label="Fotografski sklopi">what
+      <nav class="photo-gallery-index" aria-label="Fotografski sklopi">
         <?php foreach ($galleryGroups as $group): ?>
           <?php if ($group['photos']): ?>
             <a href="#<?= e($group['slug']) ?>"><?= e($group['title']) ?></a>
