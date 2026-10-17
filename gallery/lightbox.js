@@ -6,6 +6,7 @@
   const mainImage = document.getElementById('photo-lightbox-image');
   const groupLabel = document.getElementById('photo-lightbox-group');
   const creditLabel = document.getElementById('photo-lightbox-credit');
+  const awardLabel = document.getElementById('photo-lightbox-award');
   const positionLabel = document.getElementById('photo-lightbox-position');
   const closeButton = dialog.querySelector('.photo-lightbox-close');
   const previousButton = document.getElementById('photo-lightbox-previous');
@@ -16,6 +17,7 @@
     url: link.href,
     photographer: link.dataset.photographer || '',
     group: link.dataset.group || '',
+    award: link.dataset.award || '',
   }));
 
   let currentIndex = 0;
@@ -31,9 +33,11 @@
     currentIndex = (index + photos.length) % photos.length;
     const photo = photos[currentIndex];
     mainImage.src = photo.url;
-    mainImage.alt = `Fotografija s kongresa, avtor: ${photo.photographer}`;
+    mainImage.alt = `${photo.group}, foto: ${photo.photographer}${photo.award ? `, ${photo.award}` : ''}`;
     groupLabel.textContent = photo.group;
     creditLabel.textContent = `Foto: ${photo.photographer}`;
+    awardLabel.textContent = photo.award;
+    awardLabel.hidden = !photo.award;
     positionLabel.textContent = `${currentIndex + 1} / ${photos.length}`;
 
     thumbnailButtons.forEach((button) => {

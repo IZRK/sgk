@@ -345,6 +345,65 @@
           "photographer": "Anja Torkar"
         }
       ]
+    },
+    {
+      "slug": "fotografski-natecaj",
+      "title": "Fotografski natečaj",
+      "photos": [
+        {
+          "file": "01-blaz-kogovsek.webp",
+          "thumbnail": "01-blaz-kogovsek-thumb.webp",
+          "photographer": "Blaž Kogovšek",
+          "award": "1. mesto"
+        },
+        {
+          "file": "02-klemen-teran.webp",
+          "thumbnail": "02-klemen-teran-thumb.webp",
+          "photographer": "Klemen Teran",
+          "award": "2. mesto"
+        },
+        {
+          "file": "03-bernardo-cesare-in-ingrid-urban.webp",
+          "thumbnail": "03-bernardo-cesare-in-ingrid-urban-thumb.webp",
+          "photographer": "Bernardo Cesare in Ingrid Urban",
+          "award": "3. mesto"
+        },
+        {
+          "file": "04-petra-jamsek-rupnik.webp",
+          "thumbnail": "04-petra-jamsek-rupnik-thumb.webp",
+          "photographer": "Petra Jamšek Rupnik"
+        },
+        {
+          "file": "05-zan-kafol.webp",
+          "thumbnail": "05-zan-kafol-thumb.webp",
+          "photographer": "Žan Kafol"
+        },
+        {
+          "file": "06-matevz-novak.webp",
+          "thumbnail": "06-matevz-novak-thumb.webp",
+          "photographer": "Matevž Novak"
+        },
+        {
+          "file": "07-martina-stupar.webp",
+          "thumbnail": "07-martina-stupar-thumb.webp",
+          "photographer": "Martina Stupar"
+        },
+        {
+          "file": "08-tomislav-popit.webp",
+          "thumbnail": "08-tomislav-popit-thumb.webp",
+          "photographer": "Tomislav Popit"
+        },
+        {
+          "file": "09-alesa-ursic-arko.webp",
+          "thumbnail": "09-alesa-ursic-arko-thumb.webp",
+          "photographer": "Aleša Uršič Arko"
+        },
+        {
+          "file": "10-timotej-verbovsek.webp",
+          "thumbnail": "10-timotej-verbovsek-thumb.webp",
+          "photographer": "Timotej Verbovšek"
+        }
+      ]
     }
   ]
 }

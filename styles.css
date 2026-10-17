@@ -1527,6 +1527,10 @@ h2 {
   transition: transform .22s ease;
 }
 
+#fotografski-natecaj .photo-gallery-image img {
+  object-fit: contain;
+}
+
 .photo-gallery-image:hover img {
   transform: scale(1.035);
 }
@@ -1539,6 +1543,25 @@ h2 {
   color: var(--muted);
   font-size: .8rem;
   line-height: 1.35;
+}
+
+.photo-gallery-description {
+  margin: -.3rem 0 1rem;
+  color: var(--muted);
+}
+
+.photo-gallery-award {
+  display: block;
+  margin-bottom: .1rem;
+  color: var(--accent);
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.photo-lightbox-award {
+  margin: .15rem 0 0;
+  font-size: .8rem;
+  font-weight: 700;
 }
 
 .photo-gallery-empty {

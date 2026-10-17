@@ -13,6 +13,7 @@ $galleryGroups = [
     ['slug' => 'program-v-dvorani-bonavista', 'title' => 'Program v dvorani Bonavista'],
     ['slug' => 'ekskurzija-2tdk', 'title' => 'Ekskurzija 2TDK'],
     ['slug' => 'ekskurzija-v-skocjanske-jame', 'title' => 'Ekskurzija v Škocjanske jame'],
+    ['slug' => 'fotografski-natecaj', 'title' => 'Fotografski natečaj', 'description' => '»Geologija krasa« – izbor desetih fotografij. Prve tri fotografije so nagrajene.'],
 ];
 
 $photosByGroup = [];
@@ -48,6 +49,7 @@ foreach ($galleryGroups as &$group) {
             'file' => $file,
             'thumbnail' => $thumbnail,
             'photographer' => $photographer,
+            'award' => is_string($photo['award'] ?? null) ? trim($photo['award']) : '',
             'fullUrl' => $galleryUrl($group['slug'], $file),
             'thumbnailUrl' => $galleryUrl($group['slug'], $thumbnail),
             'groupTitle' => $group['title'],
@@ -85,6 +87,9 @@ require __DIR__ . '/includes/header.php';
             <?php $count = count($group['photos']); ?>
             <span><?= $count ?> <?= $count === 1 ? 'fotografija' : ($count < 5 ? 'fotografije' : 'fotografij') ?></span>
           </div>
+          <?php if (!empty($group['description'])): ?>
+            <p class="photo-gallery-description"><?= e($group['description']) ?></p>
+          <?php endif; ?>
           <div class="photo-gallery-grid">
             <?php foreach ($group['photos'] as $photo): ?>
               <?php
@@ -93,10 +98,13 @@ require __DIR__ . '/includes/header.php';
                 $photographer = $photo['photographer'];
               ?>
               <figure class="photo-gallery-card">
-                <a class="photo-gallery-image" href="<?= e($fullImageUrl) ?>" target="_blank" rel="noopener" data-lightbox-index="<?= (int)$photo['index'] ?>" data-photographer="<?= e($photographer) ?>" data-group="<?= e($group['title']) ?>" aria-haspopup="dialog" aria-controls="photo-lightbox" aria-label="Odpri fotografijo avtorja: <?= e($photographer) ?>">
+                <a class="photo-gallery-image" href="<?= e($fullImageUrl) ?>" target="_blank" rel="noopener" data-lightbox-index="<?= (int)$photo['index'] ?>" data-photographer="<?= e($photographer) ?>" data-group="<?= e($group['title']) ?>" data-award="<?= e($photo['award']) ?>" aria-haspopup="dialog" aria-controls="photo-lightbox" aria-label="Odpri fotografijo avtorja: <?= e($photographer) ?><?= $photo['award'] !== '' ? ', ' . e($photo['award']) : '' ?>">
                   <img src="<?= e($thumbnailUrl) ?>" alt="" loading="lazy" decoding="async" />
                 </a>
                 <figcaption>
+                  <?php if ($photo['award'] !== ''): ?>
+                    <span class="photo-gallery-award"><?= e($photo['award']) ?></span>
+                  <?php endif; ?>
                   <span class="photo-gallery-credit">Foto: <?= e($photographer) ?></span>
                 </figcaption>
               </figure>
@@ -111,6 +119,7 @@ require __DIR__ . '/includes/header.php';
             <div class="photo-lightbox-info">
               <p class="photo-lightbox-group" id="photo-lightbox-group"></p>
               <p class="photo-lightbox-credit" id="photo-lightbox-credit"></p>
+              <p class="photo-lightbox-award" id="photo-lightbox-award" hidden></p>
             </div>
             <div class="photo-lightbox-actions">
               <span class="photo-lightbox-position" id="photo-lightbox-position" aria-live="polite"></span>
@@ -126,7 +135,7 @@ require __DIR__ . '/includes/header.php';
           </div>
           <nav class="photo-lightbox-thumbnails" aria-label="Izberi fotografijo">
             <?php foreach ($lightboxPhotos as $photo): ?>
-              <?php $thumbnailLabel = $photo['groupTitle'] . ', foto: ' . $photo['photographer']; ?>
+              <?php $thumbnailLabel = $photo['groupTitle'] . ', foto: ' . $photo['photographer'] . ($photo['award'] !== '' ? ', ' . $photo['award'] : ''); ?>
               <button class="photo-lightbox-thumbnail" type="button" data-lightbox-thumbnail="<?= (int)$photo['index'] ?>" aria-label="<?= e($thumbnailLabel) ?>" title="<?= e($thumbnailLabel) ?>">
                 <img src="<?= e($photo['thumbnailUrl']) ?>" alt="" loading="lazy" decoding="async" />
               </button>
